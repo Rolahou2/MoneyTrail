@@ -1,0 +1,5 @@
+node_modules/
+.env
+.DS_Store   # MacOS file, ignore if you're on Windows
+*.log       # All .log files
+
