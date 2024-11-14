@@ -1,40 +1,232 @@
-import React from 'react'
+import React, { useState, useEffect } from "react";
 
-const sampleData = [
-  { id: 'HW-AMJ-001', name: 'منظف اليدين_Amreej_red', botlesize: 3.75, cost: 1.53, totalcost: 1.87, sellPriceUSD: 4,  sellPriceLL: 360000},
-  { id: 'HW-APP-002', name: 'منظف اليدين_Apple_green', botlesize: 3.75, cost: 1.60, totalcost: 1.94, sellPriceUSD: 4,  sellPriceLL: 360000 },
-  { id: 'HW-LAV-003', name: 'منظف اليدين_Lavender_violet', botlesize: 3.75, cost: 1.62, totalcost: 1.96, sellPriceUSD: 4,  sellPriceLL: 360000 },
-];
+const ProductList = () => {
+  const [products, setProducts] = useState([]);
+  const [newProducts, setNewProducts] = useState([]); // Array to store multiple new products
 
-const productlist = () => {
+  // Fetch products from backend
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("/api/products");
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
+  // Function to handle change for dynamic rows
+  const handleNewProductChange = (index, e) => {
+    const { name, value } = e.target;
+    const updatedNewProducts = [...newProducts];
+    updatedNewProducts[index] = { ...updatedNewProducts[index], [name]: value };
+    setNewProducts(updatedNewProducts);
+  };
+
+  // Add a new empty row for adding a product
+  const handleAddRow = () => {
+    setNewProducts([
+      ...newProducts,
+      {
+        productname: "",
+        productId: "",
+        botlesize: "",
+        cost: "",
+        totalcost: "",
+        sellPriceLL: "",
+      },
+    ]);
+  };
+
+  // Delete a specific row from newProducts
+  const handleDeleteRow = (index) => {
+    const updatedNewProducts = newProducts.filter((_, i) => i !== index);
+    setNewProducts(updatedNewProducts);
+  };
+
+  // Save all new products to the backend
+  const handleSaveAllProducts = async () => {
+    try {
+      const responses = await Promise.all(
+        newProducts.map((product) =>
+          fetch("/api/products", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(product),
+          })
+        )
+      );
+
+      const savedProducts = await Promise.all(
+        responses.map((res) => res.json())
+      );
+      setProducts([...products, ...savedProducts]);
+      setNewProducts([]); // Clear the new products after saving
+    } catch (error) {
+      console.error("Error saving products:", error);
+    }
+  };
+
   return (
-    <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
-      <thead>
-        <tr>
-          <th className="border border-gray-300 p-2">Product Name</th>
-          <th className="border border-gray-300 p-2">Product ID</th>
-          <th className="border border-gray-300 p-2">Bottle Size</th>
-          <th className="border border-gray-300 p-2">Cost per Unit</th>
-          <th className="border border-gray-300 p-2">Total Cost in USD</th>
-          <th className="border border-gray-300 p-2">Selling Price in USD</th>
-          <th className="border border-gray-300 p-2">Selling Price in L.L</th>
-        </tr>
-      </thead>
-      <tbody>
-        {sampleData.map((row) => (
-          <tr key={row.id}> {/* Added unique key prop */}
-            <td className="border border-gray-300 p-2">{row.name}</td>
-            <td className="border border-gray-300 p-2">{row.id}</td>
-            <td className="border border-gray-300 p-2">{row.botlesize}</td>
-            <td className="border border-gray-300 p-2">{row.cost}</td>
-            <td className="border border-gray-300 p-2">{row.totalcost}</td>
-            <td className="border border-gray-300 p-2">{row.sellPriceUSD}</td>
-            <td className="border border-gray-300 p-2">{row.sellPriceLL}</td>
+    <div>
+      <ul className="flex mb-4 float-right gap-4 p-6">
+        <button
+          onClick={handleAddRow}
+          className="text-orange-600 border bg-orange-100 rounded-lg p-2 h-10 w-24 font-semibold"
+        >
+          Add
+        </button>
+        <button
+          onClick={handleSaveAllProducts}
+          className="text-green-600 border bg-green-100 rounded-lg p-2 h-10 w-24 font-semibold"
+        >
+          Save
+        </button>
+      </ul>
+
+      {/* Table to display products */}
+      <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
+        <thead>
+          <tr>
+            <th className="border border-gray-300 p-2">Product Name</th>
+            <th className="border border-gray-300 p-2">Product ID</th>
+            <th className="border border-gray-300 p-2">Bottle Size</th>
+            <th className="border border-gray-300 p-2">Cost</th>
+            <th className="border border-gray-300 p-2">Total Cost</th>
+            <th className="border border-gray-300 p-2">Sell Price (LL)</th>
+            <th className="border border-gray-300 p-2">Sell Price (USD)</th>
+            <th className="border border-gray-300 p-2">Actions</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {/* Render existing products */}
+          {products.map((product) => (
+            <tr key={product._id}>
+              <td className="border border-gray-300 p-2">
+                {product.productname}
+              </td>
+              <td className="border border-gray-300 p-2">
+                {product.productId}
+              </td>
+              <td className="border border-gray-300 p-2">
+                {product.botlesize}
+              </td>
+              <td className="border border-gray-300 p-2">
+                {product.cost}
+              </td>
+              <td className="border border-gray-300 p-2">
+                <div>
+                  <span>$</span>
+                  <input
+                    type="number"
+                    name="totalcost"
+                    placeholder="Total Cost"
+                    value={product.totalcost}
+                    onChange={(e) => handleNewProductChange(index, e)}
+                    className="pl-6 w-full" // Add padding-left to make room for the $
+                  />
+                </div>
+              </td>
+              <td className="border border-gray-300 p-2">
+                {product.sellPriceLL}
+              </td>
+              <td className="border border-gray-300 p-2">
+                {(product.sellPriceLL / 90000).toFixed(2)}
+              </td>
+              <td className="border border-gray-300 p-2"></td>
+            </tr>
+          ))}
+
+          {/* Render rows for new products with delete option */}
+          {newProducts.map((product, index) => (
+            <tr key={index}>
+              <td className="border border-gray-300 p-2">
+                <input
+                  type="text"
+                  name="productname"
+                  placeholder="Product Name"
+                  value={product.productname}
+                  onChange={(e) => handleNewProductChange(index, e)}
+                />
+              </td>
+              <td className="border border-gray-300 p-2">
+                <input
+                  type="text"
+                  name="productId"
+                  placeholder="Product ID"
+                  value={product.productId}
+                  onChange={(e) => handleNewProductChange(index, e)}
+                />
+              </td>
+              <td className="border border-gray-300 p-2">
+                <input
+                  type="number"
+                  name="botlesize"
+                  placeholder="Bottle Size"
+                  value={product.botlesize}
+                  onChange={(e) => handleNewProductChange(index, e)}
+                />
+              </td>
+              <td className="border border-gray-300 p-2">
+                <div className="relative">
+                <span>$</span>
+                <input
+                  type="number"
+                  name="cost"
+                  placeholder="Cost"
+                  value={product.cost}
+                  onChange={(e) => handleNewProductChange(index, e)}
+                />
+                </div>
+              </td>
+              <td className="border border-gray-300 p-2">
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 transform -translate-y-1/2">
+                    $
+                  </span>
+                  <input
+                    type="number"
+                    name="totalcost"
+                    placeholder="Total Cost"
+                    value={product.totalcost}
+                    onChange={(e) => handleNewProductChange(index, e)}
+                    className="pl-4 w-full" // Add padding-left to make room for the $
+                  />
+                </div>
+              </td>
+              <td className="border border-gray-300 p-2">
+                <input
+                  type="number"
+                  name="sellPriceLL"
+                  placeholder="Sell Price (LL)"
+                  value={product.sellPriceLL}
+                  onChange={(e) => handleNewProductChange(index, e)}
+                />
+              </td>
+              <td className="border border-gray-300 p-2">
+              <div className="relative">
+                <span>$</span>
+                <input type="number" value={(product.sellPriceLL / 90000).toFixed(2)}/>
+              </div> 
+              </td>
+              <td className="border border-gray-300 p-2">
+                <button
+                  onClick={() => handleDeleteRow(index)}
+                  className="text-red-600 border bg-red-100 rounded-lg p-1"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };
 
-export default productlist;
+export default ProductList;
