@@ -26,6 +26,7 @@ const ProductList = () => {
     updatedNewProducts[index] = { ...updatedNewProducts[index], [name]: value };
     setNewProducts(updatedNewProducts);
   };
+  
 
   // Add a new empty row for adding a product
   const handleAddRow = () => {
@@ -210,7 +211,8 @@ const ProductList = () => {
               <td className="border border-gray-300 p-2">
               <div className="relative">
                 <span>$</span>
-                <input type="number" value={(product.sellPriceLL / 90000).toFixed(2)}/>
+                <input type="number" value={(product.sellPriceLL / 90000).toFixed(2)}
+                readOnly/>
               </div> 
               </td>
               <td className="border border-gray-300 p-2">

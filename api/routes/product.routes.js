@@ -1,7 +1,10 @@
 import express from "express";
 import Product from "../models/product.model.js";
+import { test } from "../controllers/product.controller.js";
 
 const router =express.Router();
+
+router.get("/test", test);
 
 // Get all products
 router.get("/", async(req,res) =>{
