@@ -59,7 +59,8 @@ const ProductList = () => {
           product.botlesize &&
           product.cost &&
           product.totalcost &&
-          product.sellPriceLL
+          product.sellPriceLL &&
+          product.sellPriceUSD
       );
   
       if (validProducts.length === 0) {
@@ -71,7 +72,7 @@ const ProductList = () => {
   
       const responses = await Promise.all(
         validProducts.map((product) =>
-          fetch("http://localhost:5000/api/products", {
+          fetch("/api/products", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(product),

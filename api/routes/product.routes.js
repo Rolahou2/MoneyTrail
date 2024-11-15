@@ -18,6 +18,17 @@ router.get("/", async(req,res) =>{
   }
 });
 
+router.post("/", async (req, res) => {
+  try {
+    console.log("Received data:", req.body); // Log the data being received
+    const newProduct = await Product.create(req.body);
+    res.status(201).json(newProduct);
+  } catch (error) {
+    console.error("Error saving product:", error.message);
+    res.status(400).json({ message: error.message });
+  }
+});
+
 {/*// Add a new product
 router.post("/", async (req, res) => {
   try {
