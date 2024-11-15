@@ -1,10 +1,12 @@
 import express from "express";
 import Product from "../models/product.model.js";
-import { test } from "../controllers/product.controller.js";
+import { createProduct, deleteProduct, updateProduct } from "../controllers/product.controller.js";
 
 const router =express.Router();
 
-router.get("/test", test);
+router.post("/create", createProduct);
+router.post("/delete/:id", deleteProduct);
+router.post("/update/:id", updateProduct);
 
 // Get all products
 router.get("/", async(req,res) =>{
@@ -16,9 +18,10 @@ router.get("/", async(req,res) =>{
   }
 });
 
-// Add a new product
+{/*// Add a new product
 router.post("/", async (req, res) => {
   try {
+    console.log("Request body:", req.body);
     const newProduct = await Product.create(req.body);
     res.status(201).json(newProduct);
   } catch (error) {
@@ -34,6 +37,6 @@ router.put("/:id", async (req, res) => {
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
-});
+});*/}
 
 export default router;

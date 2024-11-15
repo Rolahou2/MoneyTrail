@@ -26,7 +26,6 @@ const ProductList = () => {
     updatedNewProducts[index] = { ...updatedNewProducts[index], [name]: value };
     setNewProducts(updatedNewProducts);
   };
-  
 
   // Add a new empty row for adding a product
   const handleAddRow = () => {
@@ -52,25 +51,56 @@ const ProductList = () => {
   // Save all new products to the backend
   const handleSaveAllProducts = async () => {
     try {
+      // Ensure all fields are filled
+      const validProducts = newProducts.filter(
+        (product) =>
+          product.productname &&
+          product.productId &&
+          product.botlesize &&
+          product.cost &&
+          product.totalcost &&
+          product.sellPriceLL
+      );
+  
+      if (validProducts.length === 0) {
+        console.error("No valid products to save.");
+        return;
+      }
+  
+      console.log("Saving valid products:", validProducts);
+  
       const responses = await Promise.all(
-        newProducts.map((product) =>
-          fetch("/api/products", {
+        validProducts.map((product) =>
+          fetch("http://localhost:5000/api/products", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(product),
           })
         )
       );
-
+  
       const savedProducts = await Promise.all(
         responses.map((res) => res.json())
       );
+      console.log("Saved products:", savedProducts);
+  
       setProducts([...products, ...savedProducts]);
       setNewProducts([]); // Clear the new products after saving
     } catch (error) {
       console.error("Error saving products:", error);
     }
   };
+  
+  const handleDeleteProduct = async (id) => {
+    try {
+      await fetch(`/api/products/${id}`, { method: "DELETE" });
+      // Update the `products` state to remove the deleted product
+      setProducts(products.filter((product) => product._id !== id));
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
+  };
+  
 
   return (
     <div>
@@ -116,29 +146,20 @@ const ProductList = () => {
               <td className="border border-gray-300 p-2">
                 {product.botlesize}
               </td>
-              <td className="border border-gray-300 p-2">
-                {product.cost}
-              </td>
-              <td className="border border-gray-300 p-2">
-                <div>
-                  <span>$</span>
-                  <input
-                    type="number"
-                    name="totalcost"
-                    placeholder="Total Cost"
-                    value={product.totalcost}
-                    onChange={(e) => handleNewProductChange(index, e)}
-                    className="pl-6 w-full" // Add padding-left to make room for the $
-                  />
-                </div>
-              </td>
+              <td className="border border-gray-300 p-2">${product.cost}</td>
+              <td onChange={(e) => handleNewProductChange(index, e)} type="number" className="border border-gray-300 p-2">${product.totalcost}</td>
               <td className="border border-gray-300 p-2">
                 {product.sellPriceLL}
               </td>
+              <td type="number" className="border border-gray-300 p-2">${(product.sellPriceLL / 90000).toFixed(2)}</td>
               <td className="border border-gray-300 p-2">
-                {(product.sellPriceLL / 90000).toFixed(2)}
+                <button
+                  onClick={() => handleDeleteProduct(product._id)}
+                  className="text-red-600 border bg-red-100 rounded-lg p-1"
+                >
+                  Delete
+                </button>
               </td>
-              <td className="border border-gray-300 p-2"></td>
             </tr>
           ))}
 
@@ -174,14 +195,14 @@ const ProductList = () => {
               </td>
               <td className="border border-gray-300 p-2">
                 <div className="relative">
-                <span>$</span>
-                <input
-                  type="number"
-                  name="cost"
-                  placeholder="Cost"
-                  value={product.cost}
-                  onChange={(e) => handleNewProductChange(index, e)}
-                />
+                  <span>$</span>
+                  <input
+                    type="number"
+                    name="cost"
+                    placeholder="Cost"
+                    value={product.cost}
+                    onChange={(e) => handleNewProductChange(index, e)}
+                  />
                 </div>
               </td>
               <td className="border border-gray-300 p-2">
@@ -209,11 +230,14 @@ const ProductList = () => {
                 />
               </td>
               <td className="border border-gray-300 p-2">
-              <div className="relative">
-                <span>$</span>
-                <input type="number" value={(product.sellPriceLL / 90000).toFixed(2)}
-                readOnly/>
-              </div> 
+                <div className="relative">
+                  <span>$</span>
+                  <input
+                    type="number"
+                    value={(product.sellPriceLL / 90000).toFixed(2)}
+                    readOnly
+                  />
+                </div>
               </td>
               <td className="border border-gray-300 p-2">
                 <button
