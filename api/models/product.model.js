@@ -1,38 +1,62 @@
+import { text } from "express";
 import mongoose from "mongoose";
 
-const productSchema = new mongoose.Schema({
-
-  productname:{
-    type: String,
-    required: true,
-    unique: true,
+const productSchema = new mongoose.Schema(
+  {
+    productId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    category: {
+      type: String,
+      required: true,
+    },
+    scent: {
+      type: String,
+      required: true,
+    },
+    color: {
+      type: String,
+      required: true,
+      default: "colorless",
+    },
+    productname: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    botlesize: {
+      type: Number,
+      required: true,
+    },
+    cost: {
+      type: String,
+      required: true,
+    },
+    totalcost: {
+      type: String,
+      required: true,
+    },
+    sellPriceUSDwithBottle: {
+      type: String,
+      required: false,
+    },
+    sellPriceLLwithBottle: {
+      type: Number,
+      required: true,
+    },
+    sellPriceUSDwithoutBottle: {
+      type: String,
+      required: false,
+    },
+    sellPriceLLwithoutBottle: {
+      type: Number,
+      required: true,
+    },
   },
-  productId:{
-    type: String,
-    required: true,
-    unique: true,
-  },
-  botlesize: {
-    type: Number,
-    required: true,
-  },
-  cost: {
-    type: Number,
-    required: true,
-  },
-  totalcost: {
-    type: Number,
-    required: true,
-  },
-  sellPriceUSD: {
-    type: Number,
-    required: true,
-  },
-  sellPriceLL: {
-    type: Number,
-    required: true,
-  },
-}, {timestamps: true});
+  { timestamps: true }
+);
 
 const Product = mongoose.model("Product", productSchema);
 
