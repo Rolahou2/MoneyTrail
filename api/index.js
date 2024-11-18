@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import productRoutes from "./routes/product.routes.js";
+import saleRoutes from "./routes/sale.routes.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ mongoose
   });
 
 app.use("/api/products", productRoutes);
+app.use("/api/sales", saleRoutes);
 
 // Global error handling middleware
 app.use((err, req, res, next) => {
