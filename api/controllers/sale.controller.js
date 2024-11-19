@@ -7,8 +7,10 @@ export const createSale = async (req, res) => {
     const savedSale = await sale.save();
     res.status(201).json(savedSale);
   } catch (error) {
-    console.error("Error saving sale:", error);
-    res.status(500).json({ error: "Failed to save sale" });
+    console.error("Error saving sale:", error.message);
+    res
+      .status(500)
+      .json({ message: "Failed to save sale", error: error.message });
   }
 };
 
@@ -31,11 +33,9 @@ export const updateSale = async (req, res, next) => {
   if (!sale) return next(errorHandler(404, "Sale not found"));
 
   try {
-    const updatedSale = await Sale.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const updatedSale = await Sale.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     return res.status(200).json(updatedSale);
   } catch (error) {
     next(error);

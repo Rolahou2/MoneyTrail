@@ -1,9 +1,72 @@
-import React from 'react'
+import React from "react";
+import { Link } from "react-router-dom";
 
 const Home = () => {
   return (
-    <div>Home</div>
-  )
-}
+    <div className="home-page-container">
+      <div className="two-column-layout">
+        {/* Left Column */}
+        <div className="left-column">
+          <div className="intro-section">
+            <h1>BrightClean</h1>
+            <p className="description">
+              BrightClean is an in-house web application designed to streamline
+              your detergent business operations. It provides a comprehensive
+              platform to:
+            </p>
+            <ul className="feature-list">
+              <li>
+                <strong>Manage Products:</strong> Add, delete and update product
+                details efficiently.
+              </li>
+              <li>
+                <strong>Track Sales:</strong> Log sales transactions for better
+                inventory and revenue tracking.
+              </li>
+              <li>
+                <strong>Monitor Expenses:</strong> Record and categorize
+                business expenses.
+              </li>
+              <li>
+                <strong>Handle Accounting:</strong> Simplify financial
+                management with built-in tools.
+              </li>
+              <li>
+                <strong>View Dashboards:</strong> Gain insights into business
+                progress through real-time dashboards.
+              </li>
+            </ul>
+            <p className="conclusion">
+              With BrightClean, you can manage your operations seamlessly,
+              ensuring better decision-making and productivity.
+            </p>
+          </div>
+        </div>
 
-export default Home
+        {/* Right Column */}
+        <div className="right-column">
+          <div className="navigation-grid">
+            <Link to="/product-list" className="title-icon">
+              <div className="tile-icon">📦</div>
+              <span>Products</span>
+            </Link>
+            <Link to="/sales" className="title-icon">
+              <div className="tile-icon">💰</div>
+              <span>Sales</span>
+            </Link>
+            <Link to="/expenses" className="title-icon">
+              <div className="tile-icon">📊</div>
+              <span>Expenses</span>
+            </Link>
+            <Link to="/accounting" className="title-icon">
+              <div className="tile-icon">🧾</div>
+              <span>Accounting</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Home;

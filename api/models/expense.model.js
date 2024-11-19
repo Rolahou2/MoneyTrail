@@ -1,46 +1,44 @@
 import { text } from "express";
 import mongoose from "mongoose";
 
-const saleSchema = new mongoose.Schema(
+const expenseSchema = new mongoose.Schema(
   {
-    transactions: {
-      type: String,
-      unique: true,
-      required: true,
-    },
-    dateOfPurchase: {
+    dateOfExpense: {
       type: Date,
       required: true,
     },
-    businessType: {
+    category: {
       type: String,
       required: true,
     },
-    productname: {
+    description: {
       type: String,
       required: true,
     },
-    isWithBottle: {
-      type: Boolean,
-      required: true,
-      default: true,
-    },
-    quantity: {
+    weightInGrams: {
       type: Number,
       required: true,
     },
-    unitprice: {
+    paidInLL: {
       type: Number,
       required: true,
     },
-    totalamount: {
+    exchangeRate: {
       type: Number,
+      required: true,
+    },
+    paidInUSD: {
+      type: Number,
+      required: true,
+    },
+    unitPriceInUSD: {
+      type: String,
       required: true,
     },
   },
   { timestamps: true }
 );
 
-const Sale = mongoose.model("Sale", saleSchema);
+const Expense = mongoose.model("Expense", expenseSchema);
 
-export default Sale;
+export default Expense;

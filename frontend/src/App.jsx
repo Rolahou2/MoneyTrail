@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import Sales from "./pages/Sales";
 import Expenses from "./pages/Expenses";
 import Accounting from "./pages/Accounting";
+import './index.css';
 
 const App = () => {
   return (

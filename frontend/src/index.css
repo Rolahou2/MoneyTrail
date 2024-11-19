@@ -1,3 +1,532 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Sales Page Styling */
+/* General Home Page Styling */
+body {
+    background-color: #1e1e1e;
+    /* Dark background */
+    color: #ffffff;
+    /* White text */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.home-page-container {
+    background-color: #1e1e1e;
+    /* Slightly lighter dark for contrast */
+    color: #ffffff;
+    /* White text for visibility */
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Dark Two-Column Layout */
+.two-column-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+    background: #1e1e1e;
+    border-radius: 10px;
+}
+
+
+/* Left Column */
+.left-column {
+    text-align: left;
+    padding: 20px;
+}
+
+.left-column h1 {
+    font-size: 36px;
+    font-weight: bold;
+    color: #92B079;
+    /* Light green accent */
+}
+
+.left-column p {
+    color: #cccccc;
+    /* Light gray text for paragraphs */
+}
+
+/* Right Column */
+.right-column {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.navigation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+
+.title-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 250px;
+    height: 250px;
+    background-color: #2a2a2a;
+    /* Dark gray for tiles */
+    color: white;
+    /* White text */
+    text-decoration: none;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    /* Subtle shadow */
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.title-icon:hover {
+    background-color: #3a3a3a;
+    /* Slightly lighter gray on hover */
+    transform: translateY(-5px);
+}
+
+.tile-icon {
+    font-size: 64px;
+    /* Larger icons */
+    margin-bottom: 10px;
+    color: white;
+    /* Accent color for icons */
+}
+
+.title-icon span {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+}
+
+.main-button {
+    background-color: #92B079;
+    /* Accent green for buttons */
+    color: #121212;
+    /* Dark text on button */
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.main-button:hover {
+    background-color: #92B079;
+    /* Slightly darker green on hover */
+}
+
+.description {
+    font-size: 20px;
+    color: #cccccc;
+    margin-bottom: 30px;
+    text-align: justify;
+}
+
+.conclusion {
+    font-size: 20px;
+    color: white;
+    font-weight: bold;
+    margin-top: 30px;
+    text-align: justify;
+}
+
+.feature-list {
+    list-style-type: none;
+    padding-left: 0;
+    margin-bottom: 20px;
+    color: #cccccc;
+    /* Light gray text */
+}
+
+.feature-list li {
+    font-size: 18px;
+    margin-bottom: 10px;
+    text-align: justify;
+}
+
+.feature-list li strong {
+    color: #92B079;
+    /* Highlighted feature names */
+}
+
+/* Footer (Optional) */
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #1e1e1e;
+    color: #cccccc;
+    font-size: 14px;
+}
+
+.home-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.home-logo {
+    height: 60px;
+    margin-right: 10px;
+}
+
+.home-title {
+    font-size: 32px;
+    font-weight: bold;
+    color: #007acc;
+}
+
+
+
+.center-image img {
+    width: 200px;
+    margin-top: 20px;
+}
+
+
+.nav-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+    background-color: #5FBFFA;
+    color: white;
+    text-decoration: none;
+    border-radius: 20px;
+    /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow */
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.nav-tile:hover {
+    transform: translateY(-5px);
+    /* Slight lift on hover */
+    background-color: #5FBFFA;
+}
+
+.nav-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    color: #5FBFFA;
+    text-decoration: none;
+    font-size: 24px;
+    position: relative;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.nav-icon:hover {
+    background-color: white;
+    transform: scale(1.1);
+    /* Slightly enlarge on hover */
+}
+
+.tooltip {
+    display: none;
+    /* Hidden by default */
+    position: absolute;
+    bottom: -30px;
+    /* Position tooltip to the left of the icon */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.nav-icon:hover .tooltip {
+    display: block;
+    /* Show tooltip on hover */
+    transform: translateY(5px);
+}
+
+.tile-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.nav-tile span {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Intro Section */
+.intro-section {
+    text-align: left;
+    padding: 20px;
+}
+
+.intro-section h1 {
+    font-size: 36px;
+    font-weight: bold;
+    color: #b7d2a4;
+    margin-bottom: 20px;
+}
+
+
+
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 10px;
+    /* Blue background */
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    /* Ensures header stays on top */
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    height: 60px;
+}
+
+.top-nav {
+    display: flex;
+    gap: 8px;
+    /* Space between icons */
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #ffdd57;
+    /* Yellow highlight on hover */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .two-column-layout {
+        grid-template-columns: 1fr;
+        /* Single column for small screens */
+    }
+
+    .navigation-grid {
+        grid-template-columns: 1fr;
+        /* Single column for tiles */
+    }
+}
+
+.sales-page-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    background-color: #1e1e1e;
+}
+
+.quick-entry-section {
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.quick-entry {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.quick-entry-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.quick-entry-input {
+    padding: 8px;
+    border: 1px solid #1e1e1e;
+    border-radius: 5px;
+    color: #1e1e1e;
+}
+
+.quick-entry-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.sales-table-section {
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sales-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sales-table th,
+.sales-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.sales-table th {
+    background-color: #4EB655;
+    color: white;
+}
+
+
+.sales-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.sales-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: White;
+    padding-bottom: 10px;
+}
+
+.logo {
+    width: 100px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    /* Stacked vertically */
+    align-items: center;
+    gap: 20px;
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    /* Vertically center the sidebar */
+}
+
+.sales-content {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
+
+.sales-sidebar {
+    flex: 1;
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sales-sidebar h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.sidebar-group {
+    margin-bottom: 15px;
+}
+
+.sidebar-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.sidebar-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.sales-main {
+    flex: 3;
+}
+
+.sales-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sales-table th,
+.sales-table td {
+    border: 1px solid #d0e7f5;
+    padding: 10px;
+    text-align: center;
+}
+
+.sales-table th {
+    background-color: #4EB655;
+    color: white;
+}
+
+.sales-table tr:nth-child(even) {
+    background-color: #1e1e1e;
+}
+
+.add-button {
+    background-color: #4EB655;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.add-button:hover {
+    background-color: #ADF17C;
+}
+
+.delete-button {
+    background-color: #C96868;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}
+
+.save-button {
+    background-color: #4EB655;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.save-button:hover {
+    background-color: #ADF17C;
+}

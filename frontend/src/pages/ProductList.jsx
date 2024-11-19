@@ -222,7 +222,7 @@ const ProductList = () => {
     <div>
       {/* Success Message */}
       {successMessage && (
-        <div className="mb-4 p-2 bg-green-100 text-green-800 rounded-lg text-center">
+        <div className="mb-4 p-2 bg-green-200 text-green-700 rounded-lg text-center">
           {successMessage}
         </div>
       )}
@@ -230,7 +230,7 @@ const ProductList = () => {
       <ul className="flex mb-4 float-right gap-4 p-6">
         <button
           onClick={handleAddRow}
-          className="text-orange-600 border bg-orange-100 rounded-lg p-2 h-10 w-24 font-semibold"
+          className="text-orange-700 border bg-orange-200 rounded-lg p-2 h-10 w-24 font-semibold hover:opacity-80"
         >
           Add
         </button>
@@ -240,7 +240,7 @@ const ProductList = () => {
             console.log("Save button clicked");
             handleSaveAllProducts();
           }}
-          className="text-green-600 border bg-green-100 rounded-lg p-2 h-10 w-24 font-semibold"
+          className="text-green-600 border bg-green-100 rounded-lg p-2 h-10 w-24 font-semibold hover:opacity-80"
         >
           Save
         </button>
@@ -504,7 +504,7 @@ const ProductList = () => {
               <td className="border border-gray-300 p-2 text-center align-middle">
                 <button
                   onClick={() => confirmDelete(product._id, false)}
-                  className="text-red-600 border bg-red-100 rounded-lg p-1"
+                  className="text-red-700 border bg-red-300 rounded-lg p-1 hover:opacity-80"
                 >
                   Delete
                 </button>
@@ -650,7 +650,7 @@ const ProductList = () => {
               <td className="border border-gray-300 p-2 text-center align-middle">
                 <button
                   onClick={() => confirmDelete(index, true)}
-                  className="text-red-600 border bg-red-100 rounded-lg p-1"
+                  className="text-red-700 border bg-red-300 rounded-lg p-1 hover:opacity-80"
                 >
                   Delete
                 </button>
