@@ -21,6 +21,7 @@ const Expenses = () => {
   const fetchExpenses = async () => {
     try {
       const response = await fetch("/api/expenses");
+      console.log(response);
       if (!response.ok) throw new Error("Failed to fetch expenses");
       const data = await response.json();
       setExpenses(data);
@@ -58,29 +59,33 @@ const Expenses = () => {
   };
 
   // Function to handle change for dynamic rows
-  const handleExpenseChange = (index, field, value) => {
-    const updatedExpenses = [...expenses]; // Clone the current expenses array
-    updatedExpenses[index] = {
-      ...updatedExpenses[index], // Clone the specific expense object
-      [field]: value, // Update the specific field
-    };
-  
-    // Dynamic calculations based on field updates
-    if (field === "paidInLL" || field === "exchangeRate") {
-      const paidInLL = parseFloat(updatedExpenses[index].paidInLL) || 0;
-      const exchangeRate = parseFloat(updatedExpenses[index].exchangeRate) || 1; // Prevent division by zero
-      updatedExpenses[index].paidInUSD = (paidInLL / exchangeRate).toFixed(2); // Calculate paid in USD
+  const handleExpenseChange = (index, data, isNewExpense = false) => {
+    if (isNewExpense) {
+      // Handle changes for new expenses
+      const updatedNewExpenses = [...newExpenses];
+      const fieldName = data.target.name;
+      const value = data.target.value;
+
+      updatedNewExpenses[index] = {
+        ...updatedNewExpenses[index],
+        [fieldName]: value, // Merge updated fields into the specific new expense
+      };
+      setNewExpenses(updatedNewExpenses);
+    } else {
+      // Handle changes for existing expenses
+      const updatedExpenses = [...expenses];
+      const expenseIndex = expenses.findIndex(
+        (expense) => expense._id === index
+      );
+      if (expenseIndex !== -1) {
+        updatedExpenses[expenseIndex] = {
+          ...updatedExpenses[expenseIndex],
+          ...data, // Merge updated fields into the specific existing expense
+        };
+        setExpenses(updatedExpenses);
+      }
     }
-  
-    if (field === "weightsInGrams" || field === "paidInUSD") {
-      const weightsInGrams = parseFloat(updatedExpenses[index].weightsInGrams) || 1; // Prevent division by zero
-      const paidInUSD = parseFloat(updatedExpenses[index].paidInUSD) || 0;
-      updatedExpenses[index].unitUSD = (paidInUSD / weightsInGrams).toFixed(2); // Calculate unit price in USD
-    }
-  
-    setExpenses(updatedExpenses); // Update the state with the modified array
   };
-  
 
   // Add a new empty row for adding a expense
   const handleAddRow = () => {
@@ -101,6 +106,7 @@ const Expenses = () => {
 
   // Save all new expenses to the backend
   const handleSaveAllExpenses = async () => {
+    console.log("Saving expenses:", newExpenses);
     try {
       const validNewExpenses = newExpenses.filter(
         (expense) =>
@@ -113,7 +119,7 @@ const Expenses = () => {
           expense.paidInUSD &&
           expense.unitPriceInUSD
       );
-
+      console.log("Valid expenses to save:", validNewExpenses);
       if (validNewExpenses.length === 0) {
         console.error("No valid expenses to save.");
         return;
@@ -175,201 +181,204 @@ const Expenses = () => {
         </button>
       </ul>
 
-      {/* Table to display expenses */}
-      <table
-        style={{ tableLayout: "fixed", width: "100%" }}
-        className="border-collapse border border-gray-300 w-full mt-4"
-      >
-        <thead>
-          <tr className="border border-gray-300">
-            <th className="border border-gray-300 p-2 text-center align-middle">
-              Expense Date
-            </th>
-            <th className="border border-gray-300 p-2 text-center align-middle">
-              Category
-            </th>
-            <th className="border border-gray-300 p-2 text-center align-middle">
-              Description
-            </th>
-            <th className="border border-gray-300 p-2 text-center align-middle">
-              Weight in Grams
-            </th>
-            <th className="border border-gray-300 p-2 text-center align-middle">
-              Paid in LL
-            </th>
-            <th className="border border-gray-300 p-2 text-center align-middle">
-              Exchange Rate
-            </th>
-            <th className="border border-gray-300 p-2 text-center align-middle">
-              Paid ($)
-            </th>
-            <th className="border border-gray-300 p-2 text-center align-middle">
-              Unit Price ($)
-            </th>
-            <th className="border border-gray-300 p-2 text-center align-middle">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {/* Render existing expenses */}
-          {expenses.map((expense) => (
-            <tr key={expense._id} className="border border-gray-300">
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                {expense.dateOfExpense}
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                <select
-                  value={expense.category}
-                  onChange={(e) =>
-                    handleExpenseChange(
-                      expense._id,
-                      { category: e.target.value },
-                      false
-                    )
-                  }
-                  className="w-full text-center align-middle"
-                >
-                  <option value="" disabled>
-                    Select Category
-                  </option>
-                  {categories.map((cat, idx) => (
-                    <option key={idx} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                {expense.description}
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                {expense.weightInGrams}
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                {expense.paidInLL}
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                {expense.exchangeRate}
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                {expense.paidInUSD}
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                {expense.unitPriceInUSD}
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                <button
-                  onClick={() => confirmDelete(expense._id, false)}
-                  className="text-red-700 border bg-red-300 rounded-lg p-1 hover:opacity-80"
-                >
-                  Delete
-                </button>
-              </td>
+      <main className="quick-entry-input">
+        <h1 className="sales-title">Overview</h1>
+        {/* Table to display expenses */}
+        <table
+          style={{ tableLayout: "fixed", width: "100%" }}
+          className="sales-table"
+        >
+          <thead>
+            <tr className="border border-gray-300">
+              <th className="border border-gray-300 p-2 text-center align-middle">
+                Expense Date
+              </th>
+              <th className="border border-gray-300 p-2 text-center align-middle">
+                Category
+              </th>
+              <th className="border border-gray-300 p-2 text-center align-middle">
+                Description
+              </th>
+              <th className="border border-gray-300 p-2 text-center align-middle">
+                Weight in Grams
+              </th>
+              <th className="border border-gray-300 p-2 text-center align-middle">
+                Paid in LL
+              </th>
+              <th className="border border-gray-300 p-2 text-center align-middle">
+                Exchange Rate
+              </th>
+              <th className="border border-gray-300 p-2 text-center align-middle">
+                Paid ($)
+              </th>
+              <th className="border border-gray-300 p-2 text-center align-middle">
+                Unit Price ($)
+              </th>
+              <th className="border border-gray-300 p-2 text-center align-middle">
+                Actions
+              </th>
             </tr>
-          ))}
+          </thead>
+          <tbody>
+            {/* Render existing expenses */}
+            {expenses.map((expense) => (
+              <tr key={expense._id} className="border border-gray-300">
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  {expense.dateOfExpense}
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  <select
+                    value={expense.category}
+                    onChange={(e) =>
+                      handleExpenseChange(
+                        expense._id,
+                        { category: e.target.value },
+                        false
+                      )
+                    }
+                    className="w-full text-center align-middle"
+                  >
+                    <option value="" disabled>
+                      Select Category
+                    </option>
+                    {categories.map((cat, idx) => (
+                      <option key={idx} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  {expense.description}
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  {expense.weightInGrams}
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  {expense.paidInLL}
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  {expense.exchangeRate}
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  {expense.paidInUSD}
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  {expense.unitPriceInUSD}
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  <button
+                    onClick={() => confirmDelete(expense._id, false)}
+                    className="text-red-700 border bg-red-300 rounded-lg p-1 hover:opacity-80"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
 
-          {/* Render rows for new expenses with delete option */}
-          {newExpenses.map((expense, index) => (
-            <tr key={index} className="border border-gray-300">
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                <input
-                  type="date"
-                  name="dateOfExpense"
-                  value={expense.dateOfExpense}
-                  onChange={(e) => handleExpenseChange(index, e, true)}
-                  className="w-full text-center align-middle"
-                />
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                <select
-                  name="category"
-                  value={expense.category}
-                  onChange={(e) => handleExpenseChange(index, e, true)}
-                  className="w-full text-center align-middle"
-                >
-                  <option value="" disabled>
-                    Select Category
-                  </option>
-                  {categories.map((cat, idx) => (
-                    <option key={idx} value={cat}>
-                      {cat}
+            {/* Render rows for new expenses with delete option */}
+            {newExpenses.map((expense, index) => (
+              <tr key={index} className="border border-gray-300">
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  <input
+                    type="date"
+                    name="dateOfExpense"
+                    value={expense.dateOfExpense}
+                    onChange={(e) => handleExpenseChange(index, e, true)}
+                    className="w-full text-center align-middle"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  <select
+                    name="category"
+                    value={expense.category}
+                    onChange={(e) => handleExpenseChange(index, e, true)}
+                    className="w-full text-center align-middle"
+                  >
+                    <option value="" disabled>
+                      Select Category
                     </option>
-                  ))}
-                </select>
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                <input
-                  type="text"
-                  name="description"
-                  placeholder="Enter value"
-                  value={expense.description}
-                  onChange={(e) => handleExpenseChange(index, e, true)}
-                  className="w-full text-center align-middle"
-                />
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                <input
-                  type="number"
-                  name="weightInGrams"
-                  placeholder="Enter value"
-                  value={expense.weightInGrams}
-                  onChange={(e) => handleExpenseChange(index, e, true)}
-                  className="w-full text-center align-middle"
-                />
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                <input
-                  type="number"
-                  name="paidInLL"
-                  placeholder="Enter value"
-                  value={expense.paidInLL}
-                  onChange={(e) => handleExpenseChange(index, e, true)}
-                  className="w-full text-center align-middle"
-                />
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                <input
-                  type="number"
-                  name="exchangeRate"
-                  placeholder="Enter value"
-                  value={expense.exchangeRate}
-                  onChange={(e) => handleExpenseChange(index, e, true)}
-                  className="w-full text-center align-middle"
-                />
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                <input
-                  type="number"
-                  name="paidInUSD"
-                  placeholder="Enter value"
-                  value={expense.paidInUSD}
-                  onChange={(e) => handleExpenseChange(index, e, true)}
-                  className="w-full text-center align-middle"
-                />
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                <input
-                  type="number"
-                  name="unitPriceInUSD"
-                  placeholder="Enter value"
-                  value={expense.unitPriceInUSD}
-                  onChange={(e) => handleExpenseChange(index, e, true)}
-                  className="w-full text-center align-middle"
-                />
-              </td>
-              <td className="border border-gray-300 p-2 text-center align-middle">
-                <button
-                  onClick={() => confirmDelete(index, true)}
-                  className="text-red-700 border bg-red-300 rounded-lg p-1 hover:opacity-80"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                    {categories.map((cat, idx) => (
+                      <option key={idx} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  <input
+                    type="text"
+                    name="description"
+                    placeholder="Enter value"
+                    value={expense.description}
+                    onChange={(e) => handleExpenseChange(index, e, true)}
+                    className="w-full text-center align-middle"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  <input
+                    type="number"
+                    name="weightInGrams"
+                    placeholder="Enter value"
+                    value={expense.weightInGrams}
+                    onChange={(e) => handleExpenseChange(index, e, true)}
+                    className="w-full text-center align-middle"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  <input
+                    type="number"
+                    name="paidInLL"
+                    placeholder="Enter value"
+                    value={expense.paidInLL}
+                    onChange={(e) => handleExpenseChange(index, e, true)}
+                    className="w-full text-center align-middle"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  <input
+                    type="number"
+                    name="exchangeRate"
+                    placeholder="Enter value"
+                    value={expense.exchangeRate}
+                    onChange={(e) => handleExpenseChange(index, e, true)}
+                    className="w-full text-center align-middle"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  <input
+                    type="number"
+                    name="paidInUSD"
+                    placeholder="Enter value"
+                    value={expense.paidInUSD}
+                    onChange={(e) => handleExpenseChange(index, e, true)}
+                    className="w-full text-center align-middle"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  <input
+                    type="number"
+                    name="unitPriceInUSD"
+                    placeholder="Enter value"
+                    value={expense.unitPriceInUSD}
+                    onChange={(e) => handleExpenseChange(index, e, true)}
+                    className="w-full text-center align-middle"
+                  />
+                </td>
+                <td className="border border-gray-300 p-2 text-center align-middle">
+                  <button
+                    onClick={() => confirmDelete(index, true)}
+                    className="text-red-700 border bg-red-300 rounded-lg p-1 hover:opacity-80"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </main>
 
       {/* Confirmation Modal */}
       {deleteTarget && (
