@@ -154,7 +154,7 @@ const Expenses = () => {
   };
 
   return (
-    <div>
+    <div style={{ fontFamily: "Arial, sans-serif", padding: "20px" }}>
       {/* Success Message */}
       {successMessage && (
         <div className="mb-4 p-2 bg-green-200 text-green-700 rounded-lg text-center">
@@ -162,59 +162,89 @@ const Expenses = () => {
         </div>
       )}
 
-      <ul className="flex mb-4 float-right gap-4 p-6">
-        <button
-          onClick={handleAddRow}
-          className="text-orange-700 border bg-orange-200 rounded-lg p-2 h-10 w-24 font-semibold hover:opacity-80"
-        >
-          Add
-        </button>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          backgroundColor: "#f0f8ff",
+          padding: "5px",
+          marginBottom: "5px",
+          borderRadius: "8px",
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <ul className="flex mb-4 float-right gap-4 p-6">
+          <button
+            onClick={handleAddRow}
+            className="text-orange-700 border bg-orange-200 rounded-lg p-2 h-10 w-24 font-semibold hover:opacity-80"
+          >
+            Add
+          </button>
 
-        <button
-          onClick={() => {
-            console.log("Save button clicked");
-            handleSaveAllExpenses();
-          }}
-          className="text-green-600 border bg-green-100 rounded-lg p-2 h-10 w-24 font-semibold hover:opacity-80"
-        >
-          Save
-        </button>
-      </ul>
+          <button
+            onClick={() => {
+              console.log("Save button clicked");
+              handleSaveAllExpenses();
+            }}
+            className="text-green-600 border bg-green-100 rounded-lg p-2 h-10 w-24 font-semibold hover:opacity-80"
+          >
+            Save
+          </button>
+        </ul>
+      </div>
 
-      <main className="quick-entry-input">
-        <h1 className="sales-title">Overview</h1>
+      {/*Section 2*/}
+      <div
+       style={{
+        marginTop: "10px",
+        padding: "10px",
+        border: "1px solid #ccc",
+        borderRadius: "8px",
+        backgroundColor: "#fff",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+        width: "100%",
+        }}
+      >
+      <div style={{padding: "10px", backgroundColor: "#e6f7ff", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",}}>
+        <h1 style={{ textAlign: "center", fontSize: "24px", margin: "0" }}>Overview</h1>
         {/* Table to display expenses */}
-        <table
-          style={{ tableLayout: "fixed", width: "100%" }}
-          className="sales-table"
-        >
+        <table style={{ tableLayout: "fixed", width: "100%" }}>
           <thead>
             <tr className="border border-gray-300">
-              <th className="border border-gray-300 p-2 text-center align-middle">
+              <th className="border border-gray-300 p-2 text-center align-middle"
+                      style={{ color: "#2C3E50" }}>
                 Expense Date
               </th>
-              <th className="border border-gray-300 p-2 text-center align-middle">
+              <th className="border border-gray-300 p-2 text-center align-middle"
+                      style={{ color: "#2C3E50" }}>
                 Category
               </th>
-              <th className="border border-gray-300 p-2 text-center align-middle">
+              <th className="border border-gray-300 p-2 text-center align-middle"
+                      style={{ color: "#2C3E50" }}>
                 Description
               </th>
-              <th className="border border-gray-300 p-2 text-center align-middle">
+              <th className="border border-gray-300 p-2 text-center align-middle"
+                      style={{ color: "#2C3E50" }}>
                 Weight in Grams
               </th>
-              <th className="border border-gray-300 p-2 text-center align-middle">
+              <th className="border border-gray-300 p-2 text-center align-middle"
+                      style={{ color: "#2C3E50" }}>
                 Paid in LL
               </th>
-              <th className="border border-gray-300 p-2 text-center align-middle">
+              <th className="border border-gray-300 p-2 text-center align-middle"
+                      style={{ color: "#2C3E50" }}>
                 Exchange Rate
               </th>
-              <th className="border border-gray-300 p-2 text-center align-middle">
+              <th className="border border-gray-300 p-2 text-center align-middle"
+                      style={{ color: "#2C3E50" }}>
                 Paid ($)
               </th>
-              <th className="border border-gray-300 p-2 text-center align-middle">
+              <th className="border border-gray-300 p-2 text-center align-middle"
+                      style={{ color: "#2C3E50" }}>
                 Unit Price ($)
               </th>
-              <th className="border border-gray-300 p-2 text-center align-middle">
+              <th className="border border-gray-300 p-2 text-center align-middle"
+                      style={{ color: "#2C3E50" }}>
                 Actions
               </th>
             </tr>
@@ -223,10 +253,12 @@ const Expenses = () => {
             {/* Render existing expenses */}
             {expenses.map((expense) => (
               <tr key={expense._id} className="border border-gray-300">
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   {expense.dateOfExpense}
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   <select
                     value={expense.category}
                     onChange={(e) =>
@@ -236,7 +268,7 @@ const Expenses = () => {
                         false
                       )
                     }
-                    className="w-full text-center align-middle"
+                    className="edit-input"
                   >
                     <option value="" disabled>
                       Select Category
@@ -248,25 +280,32 @@ const Expenses = () => {
                     ))}
                   </select>
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   {expense.description}
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   {expense.weightInGrams}
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   {expense.paidInLL}
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   {expense.exchangeRate}
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   {expense.paidInUSD}
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   {expense.unitPriceInUSD}
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   <button
                     onClick={() => confirmDelete(expense._id, false)}
                     className="text-red-700 border bg-red-300 rounded-lg p-1 hover:opacity-80"
@@ -280,21 +319,23 @@ const Expenses = () => {
             {/* Render rows for new expenses with delete option */}
             {newExpenses.map((expense, index) => (
               <tr key={index} className="border border-gray-300">
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   <input
                     type="date"
                     name="dateOfExpense"
                     value={expense.dateOfExpense}
                     onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="w-full text-center align-middle"
+                    className="edit-input"
                   />
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   <select
                     name="category"
                     value={expense.category}
                     onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="w-full text-center align-middle"
+                    className="edit-input"
                   >
                     <option value="" disabled>
                       Select Category
@@ -306,67 +347,74 @@ const Expenses = () => {
                     ))}
                   </select>
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   <input
                     type="text"
                     name="description"
                     placeholder="Enter value"
                     value={expense.description}
                     onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="w-full text-center align-middle"
+                    className="edit-input"
                   />
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   <input
                     type="number"
                     name="weightInGrams"
                     placeholder="Enter value"
                     value={expense.weightInGrams}
                     onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="w-full text-center align-middle"
+                    className="edit-input"
                   />
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   <input
                     type="number"
                     name="paidInLL"
                     placeholder="Enter value"
                     value={expense.paidInLL}
                     onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="w-full text-center align-middle"
+                    className="edit-input"
                   />
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   <input
                     type="number"
                     name="exchangeRate"
                     placeholder="Enter value"
                     value={expense.exchangeRate}
                     onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="w-full text-center align-middle"
+                    className="edit-input"
                   />
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   <input
                     type="number"
                     name="paidInUSD"
                     placeholder="Enter value"
                     value={expense.paidInUSD}
                     onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="w-full text-center align-middle"
+                    className="edit-input"
                   />
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   <input
                     type="number"
                     name="unitPriceInUSD"
                     placeholder="Enter value"
                     value={expense.unitPriceInUSD}
                     onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="w-full text-center align-middle"
+                    className="edit-input"
                   />
                 </td>
-                <td className="border border-gray-300 p-2 text-center align-middle">
+                <td className="border border-gray-300 p-2 text-center align-middle"
+                            style={{ color: "#444" }}>
                   <button
                     onClick={() => confirmDelete(index, true)}
                     className="text-red-700 border bg-red-300 rounded-lg p-1 hover:opacity-80"
@@ -378,12 +426,12 @@ const Expenses = () => {
             ))}
           </tbody>
         </table>
-      </main>
-
+      </div>
+      </div>
       {/* Confirmation Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white rounded-lg p-4 shadow-lg">
+          <div className="bg-white text-black rounded-lg p-4 shadow-lg">
             <p className="mb-4">
               Are you sure you want to delete this expense?
             </p>

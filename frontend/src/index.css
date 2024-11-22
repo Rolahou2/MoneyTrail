@@ -14,6 +14,13 @@ body {
     padding: 0;
 }
 
+td {
+    word-wrap: break-word; /* Break long words */
+    white-space: nowrap; /* Prevent unexpected wrapping */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add ellipsis if text is too long */
+  }
+
 .home-page-container {
     background-color: #1e1e1e;
     /* Slightly lighter dark for contrast */
@@ -201,7 +208,6 @@ body {
     padding: 10px 10px;
     /* Blue background */
     color: white;
-    position: sticky;
     top: 0;
     z-index: 1000;
     /* Ensures header stays on top */
@@ -285,7 +291,8 @@ h2 {
 .edit-input {
     width: 100%;
     border: 1px solid #ccc;
-    padding: 0.5rem;
+    border-radius: 4px;
+    padding: 5px;
     text-align: center;
     font-size: inherit;
     box-sizing: border-box;

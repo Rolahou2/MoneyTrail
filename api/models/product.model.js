@@ -29,30 +29,37 @@ const productSchema = new mongoose.Schema(
     botlesize: {
       type: Number,
       required: true,
+      min: 0,
     },
     cost: {
       type: String,
       required: true,
+      min: 0,
     },
     totalcost: {
       type: String,
       required: true,
+      min: 0,
     },
     sellPriceUSDwithBottle: {
       type: String,
       required: false,
+      min: 0,
     },
     sellPriceLLwithBottle: {
       type: Number,
       required: true,
+      min: 0,
     },
     sellPriceUSDwithoutBottle: {
       type: String,
       required: false,
+      min: 0,
     },
     sellPriceLLwithoutBottle: {
       type: Number,
       required: true,
+      min: 0,
     },
   },
   { timestamps: true }
