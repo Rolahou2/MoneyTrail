@@ -258,34 +258,34 @@ h2 {
 .actions-buttons {
     display: flex;
     justify-content: space-between;
-    gap: 10px;
+    gap: 5px;
 }
 
 .actions-buttons button {
-    width: 80px;
-    height: 35px;
+    width: 30px;
+    height: 30px;
     border: none;
     border-radius: 5px;
-    font-size: 14px;
+    font-size: 20px;
     cursor: pointer;
 }
 
 .edit-button {
-    background-color: #fd7e14;
-    color: white;
+    background-color: white;
+    color: orange;
 }
 
 .edit-button:hover {
-    background-color: #e36b0a;
+    background-color: transparent;
 }
 
 .delete-button {
-    background-color: #dc3545;
-    color: white;
+    background-color: white;
+    color: #dc3545;
 }
 
 .delete-button:hover {
-    background-color: #c82333;
+    background-color: transparent;
 }
 
 .edit-input {
@@ -298,10 +298,9 @@ h2 {
     box-sizing: border-box;
 }
 
-.savetb-button,
-.cancel-button {
-    background-color: #4CAF50;
-    color: white;
+.savetb-button{
+    background-color: transparent;
+    color: #096DD9 ;
     border: none;
     padding: 5px 10px;
     cursor: pointer;
@@ -310,7 +309,8 @@ h2 {
 }
 
 .cancel-button {
-    background-color: #f44336;
+    color: #6C757D ;
+    background-color: transparent;
     /* Red */
 }
 

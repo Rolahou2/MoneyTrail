@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { FaBox, FaChartLine, FaWallet, FaFileInvoiceDollar } from "react-icons/fa";
 
 const Home = () => {
   return (
@@ -47,19 +48,19 @@ const Home = () => {
         <div className="right-column">
           <div className="navigation-grid">
             <Link to="/product-list" className="title-icon">
-              <div className="tile-icon">📦</div>
+              <FaBox style={{ fontSize: "36px" }} />
               <span>Products</span>
             </Link>
             <Link to="/sales" className="title-icon">
-              <div className="tile-icon">💰</div>
+              <FaChartLine style={{ fontSize: "36px" }} />
               <span>Sales</span>
             </Link>
             <Link to="/expenses" className="title-icon">
-              <div className="tile-icon">📊</div>
+              <FaWallet style={{ fontSize: "36px" }} />
               <span>Expenses</span>
             </Link>
             <Link to="/accounting" className="title-icon">
-              <div className="tile-icon">🧾</div>
+              <FaFileInvoiceDollar style={{ fontSize: "36px" }} />
               <span>Accounting</span>
             </Link>
           </div>

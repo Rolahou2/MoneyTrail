@@ -1,6 +1,7 @@
 import React from "react";
 import logo from "../assets/logo1.png";
 import { Link } from "react-router-dom";
+import { FaHome, FaBox, FaChartLine, FaWallet, FaFileInvoiceDollar } from "react-icons/fa";
 
 const Header = () => {
   return (
@@ -11,25 +12,20 @@ const Header = () => {
         </Link>
       </div>
       <div className="top-nav">
-        <Link to="/" className="nav-icon" title="Home">
-          🏠
-          <span className="tooltip">Home</span>
+        <Link to="/">
+        <FaHome size={24} title="Home"/>
         </Link>
-        <Link to="/product-list" className="nav-icon" title="Products">
-          📦
-          <span className="tooltip">Products</span>
+        <Link to="/product-list">
+        <FaBox size={24} title="Products Section"/>
         </Link>
-        <Link to="/sales" className="nav-icon" title="Sales">
-          💰
-          <span className="tooltip">Sales</span>
+        <Link to="/sales">
+        <FaChartLine size={24} title="Sales Section"/>
         </Link>
-        <Link to="/expenses" className="nav-icon" title="Expenses">
-          📊
-          <span className="tooltip">Expenses</span>
+        <Link to="/expenses">
+        <FaWallet size={24} title="Expenses Section"/>
         </Link>
-        <Link to="/accounting" className="nav-icon" title="Accounting">
-          🧾
-          <span className="tooltip">Accounting</span>
+        <Link to="/accounting">
+        <FaFileInvoiceDollar size={24} title="Accounting Section"/>
         </Link>
       </div>
     </div>
