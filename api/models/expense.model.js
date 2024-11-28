@@ -32,7 +32,7 @@ const expenseSchema = new mongoose.Schema(
       required: true,
     },
     unitPriceInUSD: {
-      type: String,
+      type: Number,
       required: true,
     },
   },

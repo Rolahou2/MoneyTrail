@@ -1,64 +1,82 @@
 import React, { useState, useEffect } from "react";
-import productlogo from "../assets/product2.png";
+import { FaPlus, FaSave, FaMinus, FaSearch } from "react-icons/fa"; // Icons for buttons
+import DropdownWithAddNew from "../components/DropDownWithAddNew.jsx";
+import Filters from "../components/Filters.jsx";
+import Pagination from "../components/Pagination.jsx";
+import {
+  fetchItems,
+  saveEdit,
+  cancelEdit,
+  handleDelete,
+  applyFilters,
+} from "../utils/generalUtils.js";
+import ItemsTable from "../components/ItemsTable";
 
 const Sales = () => {
-  const [products, setProducts] = useState([]); // Fetched products for dropdown
-  const [sales, setSales] = useState([]); // Fetched products for dropdown
-  const [newSales, setNewSales] = useState([]); // Sales entries
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(""); // Success message
-  const [showValidationError, setShowValidationError] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const [newSale, setNewSale] = useState({
+  const initialSale = () => ({
     transactions: `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
     dateOfPurchase: "",
     businessType: "",
     productname: "",
-    isWithBottle: true,
-    quantity: "",
-    unitprice: "",
-    totalamount: "",
+    isWithBottle: "",
+    quantity: 0,
+    unitprice: 0,
+    totalamount: 0,
   });
 
-  // Fetch products from backend
+  const [newSale, setNewSale] = useState(initialSale());
+  const [sales, setSales] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [newSales, setNewSales] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [showValidationError, setShowValidationError] = useState(false);
+  const [productNames, setProductNames] = useState([]);
+  const [withBottles, setWithBottles] = useState(["yes", "no"]);
+  const [businesstypes, setBusinesstypes] = useState(["B2B", "B2C"]);
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    rowsPerPage: 5,
+  });
+  const [originalItems, setOriginalItems] = useState({});
+
+  // Fetch products and sales
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); // Set loading to true before fetching
+      setLoading(true);
       try {
-        await Promise.all([fetchProducts(), fetchSales()]);
+        const [productData, salesData] = await Promise.all([
+          fetchItems("/api/products"),
+          fetchItems("/api/sales"),
+        ]);
+
+        // Verify the format of the fetched data
+        console.log("Fetched Product Data:", productData);
+        console.log("Fetched Sales Data:", salesData);
+
+        // Assuming productData is an array of product objects with a productname property
+        setProductNames(productData.map((product) => product.productname));
+        setProducts(productData);
+        setSales(
+          salesData.map((sale) => ({
+            ...sale,
+
+            isEditing: false,
+          }))
+        );
+      } catch (error) {
+        console.error("Error fetching data:", error);
       } finally {
-        setLoading(false); // Set loading to false after fetching
+        setLoading(false);
       }
     };
     fetchData();
   }, []);
 
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch("/api/products");
-      if (!response.ok) throw new Error("Failed to fetch products");
-      const data = await response.json();
-      setProducts(data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  };
-
-  const fetchSales = async () => {
-    try {
-      const response = await fetch("/api/sales");
-      if (!response.ok) throw new Error("Failed to fetch sales");
-      const data = await response.json();
-      const salesWithEditingState = data.map((sale) => ({
-        ...sale,
-        isEditing: false,
-      }));
-
-      setSales(salesWithEditingState);
-    } catch (error) {
-      console.error("Error fetching sales:", error);
-    }
+  const toggleFormVisibility = () => {
+    setIsFormVisible((prev) => !prev);
   };
 
   const isValidSale = (sale) => {
@@ -67,97 +85,8 @@ const Sales = () => {
       sale.businessType &&
       sale.productname &&
       sale.isWithBottle !== null &&
-      sale.quantity &&
-      sale.unitprice &&
-      sale.totalamount
+      sale.quantity
     );
-  };
-
-  const handleInputChange = (field, value) => {
-    setNewSale((prev) => {
-      let updatedSale = { ...prev, [field]: value };
-
-      // Update unit price if productname or isWithBottle changes
-      if (field === "productname" || field === "isWithBottle") {
-        const selectedProduct = products.find(
-          (product) => product.productname === updatedSale.productname
-        );
-        if (selectedProduct) {
-          updatedSale.unitprice = updatedSale.isWithBottle
-            ? selectedProduct.sellPriceLLwithBottle
-            : selectedProduct.sellPriceLLwithoutBottle;
-        }
-      }
-
-      // Recalculate total amount if quantity, unitprice, or isWithBottle changes
-      if (
-        (field === "quantity" ||
-          field === "unitprice" ||
-          field === "isWithBottle") &&
-        updatedSale.isWithBottle
-      ) {
-        const quantity = parseFloat(updatedSale.quantity) || 0;
-        const unitprice = parseFloat(updatedSale.unitprice) || 0;
-        updatedSale.totalamount = (quantity * unitprice).toFixed(2);
-      }
-
-      return updatedSale;
-    });
-  };
-
-  const handleAddSale = () => {
-    if (!isValidSale(newSale)) {
-      setShowValidationError(true);
-      return;
-    }
-    const saleWithEditing = { ...newSale, isEditing: false };
-    setNewSales((prev) => [saleWithEditing, ...prev]); // Add the new sale to the list
-    setNewSale({
-      transactions: `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`, // Generate a new transaction ID
-      dateOfPurchase: "",
-      businessType: "",
-      productname: "",
-      isWithBottle: true,
-      quantity: "",
-      unitprice: "",
-      totalamount: "",
-    }); // Reset form
-    setShowValidationError(false);
-  };
-
-  const handleSaveSales = async () => {
-    try {
-      const validNewSales = newSales.filter((sale) => isValidSale(sale));
-
-      if (validNewSales.length === 0) {
-        console.error("No valid sales to save.");
-        return;
-      }
-
-      const responses = await Promise.all(
-        validNewSales.map((sale) =>
-          fetch("/api/sales", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(sale),
-          })
-        )
-      );
-
-      const failedResponses = responses.filter((res) => !res.ok);
-      if (failedResponses.length > 0) {
-        throw new Error("Some sales failed to save");
-      }
-
-      const savedSales = await Promise.all(responses.map((res) => res.json()));
-      setSales((prev) => [...savedSales, ...prev]);
-      setNewSales([]); // Clear form
-      setSuccessMessage("Sales saved successfully!");
-
-      setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (error) {
-      console.error("Error saving sales:", error);
-    }
   };
 
   const confirmDelete = (idOrIndex, isNewSale) => {
@@ -167,63 +96,81 @@ const Sales = () => {
     setDeleteTarget({ idOrIndex, isNewSale });
   };
 
-  const handleDeleteSale = async (idOrIndex, isNewSale = false) => {
-    if (isNewSale) {
-      // Handle deletion of a new sale (client-side only)
-      const updatedNewSales = newSales.filter((_, i) => i !== idOrIndex);
-      setNewSales(updatedNewSales);
-    } else {
-      try {
-        if (!idOrIndex) {
-          console.error("Invalid ID provided for deletion:", idOrIndex);
-          return;
-        }
+  // Filters
+  const [filters, setFilters] = useState({
+    fromDate: "",
+    toDate: "",
+    selectedBusinessType: "",
+    selectedIsWithBottle: "",
+    searchName: "",
+  });
 
-        const response = await fetch(`/api/sales/${idOrIndex}`, {
-          method: "DELETE",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to delete sales from the database");
-        }
-
-        const updatedSales = sales.filter((sale) => sale._id !== idOrIndex);
-        setSales(updatedSales);
-      } catch (error) {
-        console.error("Error deleting sale:", error);
-      }
-    }
-
-    setDeleteTarget(null); // Close the delete modal after deletion
+  const handleResetFilters = () => {
+    setFilters({
+      fromDate: "",
+      toDate: "",
+      selectedBusinessType: "",
+      selectedIsWithBottle: "",
+      searchName: "",
+    });
   };
 
-  const saveEdit = async (sale, index, isNew) => {
-    try {
-      if (isNew) {
-        const updatedNewSales = [...newSales];
-        updatedNewSales[index].isEditing = false;
-        setNewSales(updatedNewSales);
-      } else {
-        const response = await fetch(`/api/sales/${sale._id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(sale),
-        });
+  const salesFiltersConfig = [
+    { name: "fromDate", label: "From:", type: "date" },
+    { name: "toDate", label: "To:", type: "date" },
+    {
+      name: "selectedBusinessType",
+      label: "Business Type",
+      type: "select",
+      options: ["B2B", "B2C"],
+    },
+    {
+      name: "selectedIsWithBottle",
+      label: "With Bottle",
+      type: "select",
+      options: ["yes", "no"],
+    },
+    { name: "searchName", label: "Name", type: "search", icon: FaSearch },
+  ];
 
-        if (!response.ok) {
-          throw new Error("Failed to update sale");
-        }
+  const filteredSales = applyFilters(sales, filters);
 
-        const updatedSales = sales.map((s) =>
-          s._id === sale._id ? { ...sale, isEditing: false } : s
+  // Handle Change, Edit, Save, Cancel, and add functions
+  const handleSaleChange = (fieldName, value) => {
+    console.log(`Updating ${fieldName} with value: ${value}`);
+    setNewSale((prevSale) => {
+      const updatedSale = { ...prevSale, [fieldName]: value };
+
+      console.log("Updated Sale:", updatedSale);
+
+      // Update unit price if productname or isWithBottle changes
+      if (fieldName === "productname" || fieldName === "isWithBottle") {
+        const selectedProduct = products.find(
+          (product) => product.productname === updatedSale.productname
         );
-        setSales(updatedSales);
+        console.log("Selected Product:", selectedProduct);
+
+        if (selectedProduct) {
+          updatedSale.unitprice =
+            updatedSale.isWithBottle === "yes" ||
+            updatedSale.isWithBottle === "no"
+              ? selectedProduct.sellPriceLLwithBottle
+              : selectedProduct.sellPriceLLwithoutBottle;
+
+          // Debug: Log updated unitprice
+          console.log("Updated Unit Price:", updatedSale.unitprice);
+        }
       }
-    } catch (error) {
-      console.error("Error saving sale:", error);
-    }
+
+      // Recalculate total amount if quantity, unitprice, or isWithBottle changes
+      if (["quantity", "unitprice"].includes(fieldName)) {
+        const quantity = parseFloat(updatedSale.quantity) || 0;
+        const unitprice = parseFloat(updatedSale.unitprice) || 0;
+        updatedSale.totalamount = (quantity * unitprice).toFixed(2);
+      }
+
+      return updatedSale;
+    });
   };
 
   const handleEditChange = (index, field, value, isNew) => {
@@ -238,17 +185,14 @@ const Sales = () => {
             product.productname === updatedNewSales[index].productname
         );
         if (selectedProduct) {
-          updatedNewSales[index].unitprice = updatedNewSales[index].isWithBottle
-            ? selectedProduct.sellPriceLLwithBottle
-            : selectedProduct.sellPriceLLwithoutBottle;
+          updatedNewSales[index].unitprice =
+            value === "yes"
+              ? selectedProduct.sellPriceLLwithBottle
+              : selectedProduct.sellPriceLLwithoutBottle;
         }
       }
-      if (
-        (field === "quantity" ||
-          field === "unitprice" ||
-          field === "isWithBottle") &&
-        updatedNewSales[index].isWithBottle
-      ) {
+      // Recalculate totalamount when quantity, unitprice, or isWithBottle changes
+      if (["quantity", "unitprice", "isWithBottle"].includes(field)) {
         const quantity = parseFloat(updatedNewSales[index].quantity) || 0;
         const unitprice = parseFloat(updatedNewSales[index].unitprice) || 0;
         updatedNewSales[index].totalamount = (quantity * unitprice).toFixed(2);
@@ -265,17 +209,13 @@ const Sales = () => {
           (product) => product.productname === updatedSales[index].productname
         );
         if (selectedProduct) {
-          updatedSales[index].unitprice = updatedSales[index].isWithBottle
-            ? selectedProduct.sellPriceLLwithBottle
-            : selectedProduct.sellPriceLLwithoutBottle;
+          updatedSales[index].unitprice =
+            value === "yes"
+              ? selectedProduct.sellPriceLLwithBottle
+              : selectedProduct.sellPriceLLwithoutBottle;
         }
       }
-      if (
-        (field === "quantity" ||
-          field === "unitprice" ||
-          field === "isWithBottle") &&
-        updatedSales[index].isWithBottle
-      ) {
+      if (["quantity", "unitprice", "isWithBottle"].includes(field)) {
         const quantity = parseFloat(updatedSales[index].quantity) || 0;
         const unitprice = parseFloat(updatedSales[index].unitprice) || 0;
         updatedSales[index].totalamount = (quantity * unitprice).toFixed(2);
@@ -285,504 +225,445 @@ const Sales = () => {
     }
   };
 
-  const handleEditClick = (sale, index, isNew) => {
+  const handleSaveEdit = (sale, index, isNew) => {
+    saveEdit({
+      item: sale,
+      index,
+      isNew,
+      newItems: newSales,
+      items: sales,
+      setItems: setSales,
+      setNewItems: setNewSales,
+      apiEndpoint: "/api/sales",
+      setSuccessMessage,
+    });
+  };
+
+  const handleToggleEditMode = (index, isNew) => {
     if (isNew) {
-      const updatedNewSales = newSales.map((s, i) =>
-        i === index ? { ...s, isEditing: true } : s
-      );
-      setNewSales(updatedNewSales);
+      const updatedNewItems = [...newSales];
+      updatedNewItems[index].isEditing = true;
+      setNewSales(updatedNewItems);
     } else {
-      const updatedSales = sales.map((s) =>
-        s._id === sale._id ? { ...s, isEditing: true } : s
-      );
-      setSales(updatedSales);
+      const updatedItems = [...sales];
+
+      // Save the original value before setting edit mode
+      setOriginalItems((prev) => ({
+        ...prev,
+        [index]: { ...updatedItems[index] },
+      }));
+
+      updatedItems[index].isEditing = true;
+      setSales(updatedItems);
     }
   };
 
-  const cancelEdit = (index, isNew) => {
-    if (isNew) {
-      const updatedNewSales = [...newSales];
-      updatedNewSales[index].isEditing = false;
-      setNewSales(updatedNewSales);
-    } else {
-      const updatedSales = [...sales];
-      updatedSales[index - newSales.length].isEditing = false;
-      setSales(updatedSales);
+  const handleAddAndSaveSale = async () => {
+    const { productname, isWithBottle, quantity } = newSale;
+
+    const selectedProduct = products.find(
+      (product) => product.productname === productname
+    );
+
+    if (!selectedProduct) {
+      console.error("Product not found. Please select a valid product.");
+      setShowValidationError(true);
+      return;
+    }
+
+    // Calculate unitprice based on isWithBottle
+    const unitprice =
+      isWithBottle === "yes" || isWithBottle === "no"
+        ? selectedProduct.sellPriceLLwithBottle
+        : selectedProduct.sellPriceLLwithoutBottle;
+
+    const generatedSale = {
+      ...newSale,
+      unitprice: unitprice,
+      totalamount: (quantity * unitprice).toFixed(2),
+      isNew: true,
+    };
+
+    if (!isValidSale(generatedSale)) {
+      console.log(generatedSale);
+      console.error("Validation failed. Please fill all required fields.");
+      setShowValidationError(true);
+      return;
+    }
+
+    try {
+      // Save to the backend
+      const response = await fetch("/api/sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(generatedSale),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save the sale to the backend");
+      }
+
+      const savedSale = await response.json();
+
+      // Update the save list with the saved sale from the backend
+      setSales((prev) => [savedSale, ...prev]);
+
+      // Reset the form
+      setNewSale({
+        transactions: `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+        dateOfPurchase: "",
+        businessType: "",
+        productname: "",
+        isWithBottle: "",
+        quantity: "",
+        unitprice: "",
+        totalamount: "",
+      });
+
+      setShowValidationError(false);
+      setIsFormVisible(false); // Collapse the form after saving
+      console.log("Sale added and saved successfully:", savedSale);
+
+      // Optionally show a success message
+      setSuccessMessage("Sale added and saved successfully!");
+      console.log("Success message:", successMessage);
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (error) {
+      console.error("Error saving sale:", error.message);
     }
   };
+
+  // Define Columns for Sales
+  const salesColumns = [
+    { header: "Transactions", accessor: "transactions", isEditable: false },
+    {
+      header: "Date of Purchase",
+      accessor: "dateOfPurchase",
+      type: "date",
+      isEditable: true,
+    },
+    {
+      header: "Business Type",
+      accessor: "businessType",
+      isEditable: true,
+      type: "select",
+      options: ["B2B", "B2C"],
+    },
+    {
+      header: "Product Name",
+      accessor: "productname",
+      isEditable: true,
+      type: "text",
+    },
+    {
+      header: "With Bottle",
+      accessor: "isWithBottle",
+      isEditable: true,
+      type: "select",
+      options: ["yes", "no"],
+    },
+    {
+      header: "Quantity",
+      accessor: "quantity",
+      isEditable: true,
+      type: "number",
+    },
+    {
+      header: "Unit Price",
+      accessor: "unitprice",
+      isEditable: false,
+      type: "number",
+    },
+    {
+      header: "Total Amount",
+      accessor: "totalamount",
+      isEditable: false,
+      type: "number",
+    },
+  ];
+
+  // pagination
+  const { currentPage, rowsPerPage } = pagination;
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const paginatedSales = filteredSales.slice(
+    startIndex,
+    startIndex + rowsPerPage
+  );
 
   return (
-    <div className="subpages-container">
-      {/* Top Row: Sales Entry form*/}
-      {loading ? (
-        <div className="loading-spinner">Loading...</div>
-      ) : (
-        <>
-          <section className="entry-section">
-            {/* Left: Image */}
-            <div className="bottle-image-container">
-              <img src={productlogo} alt="Bottle" classname="bottle-image" />
-            </div>
-            {/* Middle: Entry Fields */}
-            <div className="entry-container">
-              <div className="entry-title">
-                <h2>Sales Form</h2>
+    <div>
+      {/* Section 1 */}
+      <div>
+        <div>
+          <h1 className="page-title">Sales Overview</h1>
+        </div>
+
+        {/* Filters */}
+        <Filters
+          filtersConfig={salesFiltersConfig}
+          filters={filters}
+          setFilters={(updatedFilter) => {
+            setFilters((prevFilters) => ({
+              ...prevFilters,
+              ...updatedFilter,
+            }));
+          }}
+          onResetFilters={handleResetFilters}
+        />
+      </div>
+
+      {/* Table Section */}
+      <div className="table-panel">
+        <ItemsTable
+          columns={salesColumns}
+          items={paginatedSales}
+          onEdit={handleEditChange}
+          onDelete={(idOrIndex, isNewSale) => {
+            if (idOrIndex !== undefined && idOrIndex !== null) {
+              handleDelete(idOrIndex, isNewSale, "sales", setSales);
+            } else {
+              console.error("Delete target is not properly set:", idOrIndex);
+            }
+          }}
+          onSaveEdit={handleSaveEdit}
+          onCancelEdit={(index, isNew) =>
+            cancelEdit({
+              index,
+              isNew,
+              newItems: newSales,
+              setNewItems: setNewSales,
+              items: sales,
+              setItems: setSales,
+              originalItems,
+              setOriginalItems,
+            })
+          }
+          onToggleEditMode={handleToggleEditMode}
+        />
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={Math.ceil(filteredSales.length / pagination.rowsPerPage)}
+          onPageChange={(page) =>
+            setPagination((prev) => ({ ...prev, currentPage: page }))
+          }
+        />
+      </div>
+
+      {/* Section 2: Add New Sale */}
+
+      {/* Add New and Close buttons*/}
+      <div
+        style={{
+          margin: "20px auto", // Center the section horizontally
+          maxWidth: "95%", // Aligns with table width
+          display: "flex",
+          flexDirection: "column", // Stack elements vertically
+          gap: "15px", // Adds space between button and table
+        }}
+      >
+        <button
+          className={`button button-add ${isFormVisible ? "close" : "add"}`}
+          onClick={toggleFormVisibility}
+        >
+          {isFormVisible ? (
+            <>
+              <FaMinus style={{ fontSize: "18px" }} />
+              <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+                Close
+              </span>
+            </>
+          ) : (
+            <>
+              <FaPlus style={{ fontSize: "18px" }} />
+              <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+                Add New
+              </span>
+            </>
+          )}
+        </button>
+
+        {/* Success Message */}
+        {successMessage && (
+          <div
+            className="mb-4 p-2 bg-green-200 text-green-700 rounded-lg text-center"
+            style={{
+              width: "400px",
+              marginLeft: "300px", // Add space between the button and the message
+              marginTop: "5px",
+              padding: "10px 15px",
+              gap: "5px",
+              backgroundColor: "#d4edda", // Success green background
+              color: "#155724", // Success green text
+              borderRadius: "5px",
+              fontSize: "16px",
+              textAlign: "center",
+            }}
+          >
+            {successMessage}
+          </div>
+        )}
+
+        {/* Sale Form */}
+        {isFormVisible && (
+          <div>
+            <h1 className="page-title" style={{ marginTop: "5px" }}>
+              Add New Sale
+            </h1>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr",
+                gap: "15px",
+              }}
+            >
+              <DropdownWithAddNew
+                type="productname"
+                options={productNames}
+                setOptions={setProductNames}
+                selectedOption={newSale.productname}
+                setSelectedOption={(value) =>
+                  setNewSale((prev) => ({ ...prev, productname: value }))
+                }
+              />
+
+              <DropdownWithAddNew
+                type="businesstype"
+                options={businesstypes}
+                setOptions={setBusinesstypes}
+                selectedOption={newSale.businessType}
+                setSelectedOption={(value) =>
+                  setNewSale((prev) => ({ ...prev, businessType: value }))
+                }
+              />
+
+              <DropdownWithAddNew
+                type="iswithBottle"
+                options={withBottles}
+                setOptions={setWithBottles}
+                selectedOption={newSale.isWithBottle}
+                setSelectedOption={(value) =>
+                  setNewSale((prev) => ({ ...prev, isWithBottle: value }))
+                }
+              />
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  border: "1px solid #ccc",
+                  borderRadius: "5px",
+                  padding: "10px",
+                  backgroundColor: "#fff",
+                  width: "450px",
+                  gap: "10px",
+                }}
+              >
+                <label
+                  htmlFor="dateOfPurchase"
+                  className="text-gray-600"
+                  style={{ fontWeight: "bold", margin: "0" }}
+                >
+                  Date of Purchase:
+                </label>
+                <input
+                  id="dateOfPurchase"
+                  type="date"
+                  placeholder="Enter Value"
+                  style={{
+                    outline: "none",
+                    border: "none",
+                    flex: 1,
+                    color: "#888",
+                  }}
+                  value={newSale.dateOfPurchase}
+                  onChange={(e) =>
+                    handleSaleChange("dateOfPurchase", e.target.value)
+                  }
+                />
               </div>
-              <div className="entry-fields">
-                <div className="entry-group">
-                  <label htmlFor="dateOfPurchase">Date of Purchase</label>
-                  <input
-                    type="date"
-                    id="dateOfPurchase"
-                    className={`entry-input ${
-                      showValidationError && !newSale.dateOfPurchase
-                        ? "input-error"
-                        : ""
-                    }`}
-                    value={newSale.dateOfPurchase}
-                    onChange={(e) =>
-                      handleInputChange("dateOfPurchase", e.target.value)
-                    }
-                  />
-                </div>
 
-                <div className="entry-group">
-                  <label htmlFor="businessType">Business Type</label>
-                  <select
-                    id="businessType"
-                    className={`entry-input ${
-                      showValidationError && !newSale.businessType
-                        ? "input-error"
-                        : ""
-                    }`}
-                    value={newSale.businessType}
-                    onChange={(e) =>
-                      handleInputChange("businessType", e.target.value)
-                    }
-                  >
-                    <option value="">Select Type</option>
-                    <option value="B2B">B2B</option>
-                    <option value="B2C">B2C</option>
-                  </select>
-                </div>
-
-                <div className="entry-group">
-                  <label htmlFor="productname">Product Name</label>
-                  <select
-                    type="text"
-                    id="productname"
-                    className={`entry-input ${
-                      showValidationError && !newSale.productname
-                        ? "input-error"
-                        : ""
-                    }`}
-                    value={newSale.productname}
-                    onChange={(e) =>
-                      handleInputChange("productname", e.target.value)
-                    }
-                  >
-                    <option value="">Select Product</option>
-                    {products.map((product) => (
-                      <option key={product._id} value={product.productname}>
-                        {product.productname}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="entry-group">
-                  <label htmlFor="isWithBottle">With Bottle</label>
-                  <select
-                    type="text"
-                    id="isWithBottle"
-                    className="entry-input"
-                    value={newSale.isWithBottle ? "true" : "false"}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "isWithBottle",
-                        e.target.value === "true"
-                      )
-                    }
-                  >
-                    <option value="true">Yes</option>
-                    <option value="false">No</option>
-                  </select>
-                </div>
-
-                <div className="entry-group">
-                  <label htmlFor="quantity">Quantity</label>
-                  <input
-                    type="number"
-                    id="quantity"
-                    className={`entry-input ${
-                      showValidationError && !newSale.quantity
-                        ? "input-error"
-                        : ""
-                    }`}
-                    value={newSale.quantity}
-                    onChange={(e) =>
-                      handleInputChange("quantity", e.target.value)
-                    }
-                  />
-                </div>
-
-                <div className="entry-group">
-                  <label htmlFor="unitprice">Unit Price</label>
-                  <input
-                    type="number"
-                    id="unitprice"
-                    className="entry-input"
-                    value={newSale.unitprice}
-                    readOnly
-                  />
-                </div>
-
-                <div className="entry-group">
-                  <label htmlFor="totalamount">Total Amount</label>
-                  <input
-                    type="number"
-                    id="totalamount"
-                    className="entry-input"
-                    value={newSale.totalamount}
-                    onChange={(e) =>
-                      !newSale.isWithBottle
-                        ? handleInputChange("totalamount", e.target.value)
-                        : null
-                    }
-                    readOnly={newSale.isWithBottle}
-                  />
-                </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  border: "1px solid #ccc",
+                  borderRadius: "5px",
+                  padding: "10px",
+                  backgroundColor: "#fff",
+                  width: "450px",
+                  gap: "10px",
+                }}
+              >
+                <label
+                  htmlFor="quantity"
+                  className="text-gray-600"
+                  style={{ fontWeight: "bold", margin: "0" }}
+                >
+                  Quantity:
+                </label>
+                <input
+                  id="quantity"
+                  type="number"
+                  placeholder="Enter Value"
+                  style={{
+                    outline: "none",
+                    border: "none",
+                    flex: 1,
+                    color: "#888",
+                  }}
+                  value={newSale.quantity}
+                  onChange={(e) => handleSaleChange("quantity", e.target.value)}
+                />
               </div>
             </div>
-            {/* Right: Buttons */}
-            <div className="entry-actions">
-              {/* Validation Message */}
+
+            <div
+              className="actions-buttons"
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                gap: "5px",
+                marginRight: "15px",
+              }}
+            >
               {showValidationError && (
-                <div className="error-message">
+                <div
+                  className="error-message"
+                  style={{
+                    textAlign: "center",
+                    margin: "0",
+                    fontSize: "16px",
+                    color: "red",
+                  }}
+                >
                   Please fill in all required fields before adding the sale.
                 </div>
               )}
-              <button className="add-button" onClick={handleAddSale}>
-                Add Sale
-              </button>
+
               <button
-                className="save-button"
-                onClick={() => {
-                  console.log("Save button clicked");
-                  handleSaveSales();
+                className="button-savetb"
+                onClick={handleAddAndSaveSale}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "5px",
+                  padding: "10px 10px",
                 }}
               >
-                Save
+                <FaSave style={{ fontSize: "18px" }} />
+                <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+                  Save
+                </span>
               </button>
             </div>
-          </section>
-
-          {/* Bottom Row: Sales Recpords */}
-          {/* Success Message */}
-          {successMessage && (
-            <div className="mb-4 p-2 bg-green-200 text-green-700 rounded-lg text-center">
-              {successMessage}
-            </div>
-          )}
-          <section className="entry-section">
-            <div className="entry-title">
-              <h2>Sales Records</h2>
-            </div>
-            <table>
-              <thead>
-                <tr className="border border-gray-300">
-                  <th className="border border-gray-300 p-2 text-center align-middle">
-                    Transactions
-                  </th>
-                  <th className="border border-gray-300 p-2 text-center align-middle">
-                    Date of Purchase
-                  </th>
-                  <th className="border border-gray-300 p-2 text-center align-middle">
-                    Business Type
-                  </th>
-                  <th
-                    style={{
-                      width: "200px",
-                      wordWrap: "break-word",
-                      whiteSpace: "normal",
-                    }}
-                    className="border border-gray-300 p-2 text-center align-middle"
-                  >
-                    Product Name
-                  </th>
-                  <th className="border border-gray-300 p-2 text-center align-middle">
-                    With Bottle
-                  </th>
-                  <th className="border border-gray-300 p-2 text-center align-middle">
-                    Quantity
-                  </th>
-                  <th className="border border-gray-300 p-2 text-center align-middle">
-                    Unit Price
-                  </th>
-                  <th className="border border-gray-300 p-2 text-center align-middle">
-                    Total Amount
-                  </th>
-                  <th className="border border-gray-300 p-2 text-center align-middle">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ...newSales.map((sale, index) => ({
-                    ...sale,
-                    index,
-                    isNew: true,
-                  })),
-                  ...sales.map((sale, index) => ({
-                    ...sale,
-                    index,
-                    isNew: false,
-                  })),
-                ]
-                  .sort((a, b) => {
-                    const dateA = new Date(a.dateOfPurchase).getTime();
-                    const dateB = new Date(b.dateOfPurchase).getTime();
-                    return dateB - dateA; // Descending order
-                  })
-                  .map((sale) => (
-                    <tr
-                      key={sale._id || `new-${sale.index}`}
-                      className={`border border-gray-300 ${
-                        !sale._id ? "bg-yellow-100" : ""
-                      }`}
-                    >
-                      {sale.isEditing ? (
-                        <>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            <input
-                              type="text"
-                              value={sale.transactions}
-                              readOnly
-                              className="edit-input"
-                            />
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            <input
-                              type="date"
-                              value={sale.dateOfPurchase}
-                              onChange={(e) =>
-                                handleEditChange(
-                                  sale.index,
-                                  "dateOfPurchase",
-                                  e.target.value,
-                                  sale.isNew
-                                )
-                              }
-                              className="edit-input"
-                            />
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            <input
-                              type="text"
-                              value={sale.businessType}
-                              onChange={(e) =>
-                                handleEditChange(
-                                  sale.index,
-                                  "businessType",
-                                  e.target.value,
-                                  sale.isNew
-                                )
-                              }
-                              className="edit-input"
-                            />
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            <input
-                              type="text"
-                              value={sale.productname}
-                              onChange={(e) =>
-                                handleEditChange(
-                                  sale.index,
-                                  "productname",
-                                  e.target.value,
-                                  sale.isNew
-                                )
-                              }
-                              className="edit-input"
-                            />
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            <select
-                              value={sale.isWithBottle ? "true" : "false"}
-                              onChange={(e) =>
-                                handleEditChange(
-                                  sale.index,
-                                  "isWithBottle",
-                                  e.target.value === "true",
-                                  sale.isNew
-                                )
-                              }
-                              className="edit-input"
-                            >
-                              <option value="true">Yes</option>
-                              <option value="false">No</option>
-                            </select>
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            <input
-                              type="number"
-                              value={sale.quantity}
-                              onChange={(e) =>
-                                handleEditChange(
-                                  sale.index,
-                                  "quantity",
-                                  e.target.value,
-                                  sale.isNew
-                                )
-                              }
-                              className="edit-input"
-                            />
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            <input
-                              type="number"
-                              value={sale.unitprice}
-                              readOnly
-                              className="edit-input"
-                            />
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            <input
-                              type="number"
-                              value={sale.totalamount}
-                              onChange={(e) =>
-                                !sale.isWithBottle
-                                  ? handleEditChange(
-                                      sale.index,
-                                      "totalamount",
-                                      e.target.value,
-                                      sale.isNew
-                                    )
-                                  : null
-                              }
-                              readOnly={sale.isWithBottle}
-                              className="edit-input"
-                            />
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            <div
-                              style={{
-                                display: "flex",
-                                justifyContent: "center",
-                                gap: "5px",
-                              }}
-                            >
-                              <button
-                                onClick={() =>
-                                  saveEdit(sale, sale.index, sale.isNew)
-                                }
-                                className="savetb-button"
-                              >
-                                Save
-                              </button>
-                              <button
-                                onClick={() =>
-                                  cancelEdit(sale.index, sale.isNew)
-                                }
-                                className="cancel-button"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </td>
-                        </>
-                      ) : (
-                        <>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            {sale.transactions}
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            {
-                              new Date(sale.dateOfPurchase)
-                                .toISOString()
-                                .split("T")[0]
-                            }
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            {sale.businessType}
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            {sale.productname}
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            {sale.isWithBottle ? "Yes" : "No"}
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            {sale.quantity}
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            {sale.unitprice}
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            {sale.totalamount}
-                          </td>
-                          <td className="border border-gray-300 p-2 text-center align-middle">
-                            <div className="actions-buttons">
-                              <button
-                                className="edit-button"
-                                onClick={() =>
-                                  handleEditClick(sale, sale.index, sale.isNew)
-                                }
-                              >
-                                Edit
-                              </button>
-                              <button
-                                className="delete-button"
-                                onClick={() =>
-                                  confirmDelete(
-                                    sale.isNew ? sale.index : sale._id,
-                                    sale.isNew
-                                  )
-                                }
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        </>
-                      )}
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </section>
-
-          {deleteTarget && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-              <div className="bg-white text-black rounded-lg p-4 shadow-lg">
-                <p className="mb-4">
-                  Are you sure you want to delete this sale?
-                </p>
-                <div className="flex justify-end gap-2">
-                  <button
-                    onClick={() =>
-                      handleDeleteSale(
-                        deleteTarget.idOrIndex,
-                        deleteTarget.isNewSale
-                      )
-                    }
-                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
-                  <button
-                    onClick={() => setDeleteTarget(null)}
-                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

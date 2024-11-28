@@ -21,9 +21,8 @@ const saleSchema = new mongoose.Schema(
       required: true,
     },
     isWithBottle: {
-      type: Boolean,
+      type: String,
       required: true,
-      default: true,
     },
     quantity: {
       type: Number,

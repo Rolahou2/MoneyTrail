@@ -2,8 +2,217 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Sales Page Styling */
-/* General Home Page Styling */
+/* General button styles */
+/* Base Button */
+/* General Styles */
+
+  
+  /* Table Styles */
+  table {
+    width: 80%;
+    border-collapse: collapse;
+    background-color: #fff;
+  }
+  
+ 
+  
+.actions-buttons {
+    display: flex; /* Ensures proper alignment of child buttons */
+    gap: 0px; /* Spacing between buttons */
+    justify-content: center; /* Center the buttons */
+    align-items: center; /* Vertically align the content */
+  }
+
+  .button {
+    border: none;
+    border-radius: 5px;
+    width: 30px; /* Same width for all */
+    height: 30px; /* Same height for all */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px; /* Same font size */
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth hover */
+  }
+  
+  /* Button Variants */
+  .button-edit {
+    background-color: transparent; /* Sky Blue */
+    color: #3498db;
+  }
+  .button-edit:hover {
+    color: #247eba; /* Darker Blue */
+  }
+  
+  .button-delete {
+    background-color: transparent; /* Red */
+    color: #e74c3c;
+  }
+  .button-delete:hover {
+    color: #c0392b; /* Darker Red */
+  }
+  
+  .button-savetb {
+    background-color: transparent; /* Green */
+    color: #2ecc71;
+  }
+  .button-savetb:hover {
+    color: #27ae60; /* Darker Green */
+  }
+  
+  .button-canceltb {
+    background-color: transparent; /* Light Gray */
+    color: #7f8c8d;
+  }
+  .button-canceltb:hover {
+    color: #626e73; /* Darker Gray */
+  }
+  
+  .button-reset {
+    background-color: transparent; /* Orange */
+    color: #FF8225;
+  }
+  .button-reset:hover {
+    color: #FF9F29; /* Darker Orange */
+  }
+  
+  .button-add {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    width: 130px;
+    justify-content: left;
+    transition: background-color 0.3s ease;
+  }
+  
+  .button-add.add {
+    background-color: #41B06E; /* Green */
+    color: #fff;
+  }
+  
+  .button-add.add:hover {
+    background-color: #34A853; /* Darker green on hover */
+  }
+  
+  .button-add.close {
+    background-color: #FF5733; /* Red */
+    color: #fff;
+  }
+  
+  .button-add.close:hover {
+    background-color: #E74C3C; /* Darker red on hover */
+  }
+  
+  /* Pagination Buttons */
+  .pagination-button {
+    background-color: transparent; /* Gray */
+    color: #666A6D;
+  }
+  .pagination-button:hover {
+    background-color: #bdc3c7; /* Lighter Gray */
+  }
+  .pagination-button.active {
+    background-color: #ffffff; /* Sky Blue */
+    color: #3498db;
+    font-weight: bold;
+  }
+  .pagination-button.active:hover {
+    color: #247eba; /* Sky Blue */
+  }
+  
+  /* Text styles */
+  .page-text {
+    font-size: 16px; /* Standard text size */
+  }
+  
+  .page-title {
+    font-size: 22px; /* Larger font size for h1 */
+    font-weight: bold;
+    text-align: center;
+    margin: 30px 0;
+  }
+  
+  input, select {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    color: #555;
+    background-color: #fff;
+    transition: border-color 0.3s;
+  }
+  
+  input:focus, select:focus {
+    border-color: #41B06E; /* Highlight focus */
+    outline: none;
+  }
+
+  .filter-panel {
+    margin: 20px auto;
+    max-width: 95%;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+.table-panel {
+    margin: 20px auto;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 95%;
+    width: 100%;
+}
+
+.table-bordered {
+    width: 100%; /* equivalent to w-full */
+    border-collapse: collapse; /* equivalent to border-collapse */
+    border: 1px solid #d1d5db; /* equivalent to border and border-gray-300 */
+  }
+  
+  /* Table Header (th) Styles */
+  .th-bordered {
+    border: 1px solid #d1d5db; /* equivalent to border-gray-300 */
+    padding: 0.5rem; /* equivalent to p-2 */
+    text-align: center; /* equivalent to text-center */
+    vertical-align: middle; /* equivalent to align-middle */
+    color: #4b5563; /* equivalent to text-gray-600 */
+  }
+  
+  /* Table Data Cell (td) Styles */
+  .td-bordered {
+    border: 1px solid #d1d5db; /* equivalent to border-gray-300 */
+    padding: 0.5rem; /* equivalent to p-2 */
+    text-align: center; /* equivalent to text-center */
+    vertical-align: middle; /* equivalent to align-middle */
+    color: #444; /* custom color for text */
+  }
+
+
+
+
+
+
+
+
+
+
+
+
 body {
     background-color: #1e1e1e;
     /* Dark background */
@@ -164,6 +373,18 @@ td {
     /* Slightly enlarge on hover */
 }
 
+.nav-link {
+    display: flex;
+    align-items: center;
+    color: #7dd3fc; /* Default color */
+    text-decoration: none; /* Remove underline */
+    transition: color 0.3s ease;
+  }
+  
+  .nav-link:hover {
+    color: #7f8c8d; /* Highlight color when hovered */
+  }
+
 .tooltip {
     display: none;
     /* Hidden by default */
@@ -205,7 +426,10 @@ td {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 10px;
+    padding: 10px;
+    width: 100%;
+    max-width: 100%;
+    background-color: #333;
     /* Blue background */
     color: white;
     top: 0;
@@ -220,7 +444,9 @@ td {
 
 .top-nav {
     display: flex;
-    gap: 8px;
+    gap: 50px;
+    align-items: center;
+    align-content: center;
     /* Space between icons */
 }
 
@@ -255,38 +481,6 @@ h2 {
     color: #444;
 }
 
-.actions-buttons {
-    display: flex;
-    justify-content: space-between;
-    gap: 5px;
-}
-
-.actions-buttons button {
-    width: 30px;
-    height: 30px;
-    border: none;
-    border-radius: 5px;
-    font-size: 20px;
-    cursor: pointer;
-}
-
-.edit-button {
-    background-color: white;
-    color: orange;
-}
-
-.edit-button:hover {
-    background-color: transparent;
-}
-
-.delete-button {
-    background-color: white;
-    color: #dc3545;
-}
-
-.delete-button:hover {
-    background-color: transparent;
-}
 
 .edit-input {
     width: 100%;
@@ -437,7 +631,8 @@ h2 {
 
 .error-message {
     color: red;
-    margin-bottom: 10px;
+    margin-top: 20px;
+    margin-bottom: 5px;
     font-size: 14px;
     text-align: center;
 }

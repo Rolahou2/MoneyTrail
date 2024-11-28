@@ -1,97 +1,222 @@
 import React, { useState, useEffect } from "react";
+import { FaPlus, FaSave, FaMinus, FaSearch, } from "react-icons/fa";
+import DropdownWithAddNew from "../components/DropDownWithAddNew";
+import Pagination from "../components/Pagination";
+import Filters from "../components/Filters.jsx";
+import { fetchItems, saveEdit, cancelEdit, handleDelete, applyExpenseFilters } from "../utils/generalUtils.js";
+import ItemsTable from "../components/ItemsTable.jsx";
 
 const Expenses = () => {
+
+  const initialExpense = () => ({
+    dateOfExpense: "",
+    category: "",
+    description: "",
+    weightInGrams: "",
+    paidInLL: "",
+    exchangeRate: "",
+    paidInUSD: "",
+    unitPriceInUSD: "",
+  });
+  const [newExpense, setNewExpense] = useState(initialExpense());
   const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState();
   const [newExpenses, setNewExpenses] = useState([]); // Array to store multiple new expenses
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const categories = [
-    "Purchases & Supplies",
-    "Travel & Transportation",
-    "Course & Consultation Fees",
-    "Regular Facility Expenses",
-    "Irregular Facility Expenses",
-  ];
+  const [showValidationError, setShowValidationError] = useState(false);
+  const [categories, setCategories] = useState(["Purchases & Supplies", 
+        "Travel & Transportation", 
+        "Course & Consultation Fees", 
+        "Regular Facility Expenses", 
+        "Irregular Facility Expenses"]);
+  const [isFormVisible, setIsFormVisible] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-
-  // Fetch expenses from backend
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    rowsPerPage: 5,
+  });
+  const [originalItems, setOriginalItems] = useState({});
+  
   useEffect(() => {
-    fetchExpenses();
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const expensesData = await fetchItems("/api/expenses");
+
+        // Verify the format of the fetched data
+        console.log("Fetched Expenses Data:", expensesData);
+
+        // Assuming expensesData is an array of expense objects
+        setExpenses(
+          expensesData.map((expense) => ({
+            ...expense,
+            isEditing: false,
+          }))
+        );
+      } catch (error) {
+        console.error("Error fetching expenses data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  const fetchExpenses = async () => {
-    try {
-      const response = await fetch("/api/expenses");
-      console.log(response);
-      if (!response.ok) throw new Error("Failed to fetch expenses");
-      const data = await response.json();
-      setExpenses(data);
-    } catch (error) {
-      console.error("Error fetching expenses:", error);
-    }
+  const toggleFormVisibility = () => {
+    setIsFormVisible((prev) => !prev);
+  };
+
+  const isValidExpense = (expense) => {
+    return (
+      expense.dateOfExpense &&
+      expense.category &&
+      expense.description &&
+      expense.weightInGrams &&
+      expense.paidInLL &&
+      expense.exchangeRate &&
+      expense.paidInUSD
+    );
   };
 
   const confirmDelete = (idOrIndex, isNewExpense) => {
+    console.log(
+      `Confirm delete: ID or Index: ${idOrIndex}, isNew: ${isNewExpense}`
+    );
     setDeleteTarget({ idOrIndex, isNewExpense });
   };
 
-  const handleDeleteExpense = async (idOrIndex, isNewExpense = false) => {
-    if (isNewExpense) {
-      // Handle deletion of a new expense (client-side only)
-      const updatedNewExpenses = newExpenses.filter((_, i) => i !== idOrIndex);
-      setNewExpenses(updatedNewExpenses);
-    } else {
-      try {
-        const response = await fetch(`/api/expenses/${idOrIndex}`, {
-          method: "DELETE",
-        });
+  const [filters, setFilters] = useState({
+    fromDate: "",
+    toDate: "",
+    selectedCategory: "",
+    searchName: "",
+  });
 
-        if (!response.ok) {
-          throw new Error("Failed to delete expense from the database");
-        }
-
-        // Remove the expense from the UI state
-        setExpenses(expenses.filter((expense) => expense._id !== idOrIndex));
-      } catch (error) {
-        console.error("Error deleting expense:", error);
-      }
-    }
-    setDeleteTarget(null); // Close the modal after deletion
+  const handleResetFilters = () => {
+    setFilters({
+      fromDate: "",
+      toDate: "",
+      selectedCategory: "",
+      searchName: "",
+    });
   };
 
-  // Function to handle change for dynamic rows
-  const handleExpenseChange = (index, data, isNewExpense = false) => {
-    if (isNewExpense) {
-      // Handle changes for new expenses
+  const expensesFiltersConfig = [
+    { name: "fromDate", label: "From:", type: "date" },
+    { name: "toDate", label: "To:", type: "date" },
+    {
+      name: "selectedCategory",
+      label: "Category",
+      type: "select",
+      options: ["Purchases & Supplies", 
+        "Travel & Transportation", 
+        "Course & Consultation Fees", 
+        "Regular Facility Expenses", 
+        "Irregular Facility Expenses"],
+    },
+    { name: "searchName", label: "Name", type: "search", icon: FaSearch },
+  ];
+
+  const filteredExpenses = applyExpenseFilters(expenses, filters);
+
+  const handleExpenseChange = (fieldName, value) => {
+    console.log(`Updating ${fieldName} with value: ${value}`);
+    setNewExpense((prevExpense) => {
+      const updatedExpense = { ...prevExpense, [fieldName]: value };
+      return updatedExpense;
+    });
+  };
+
+  const handleEditChange = (index, field, value, isNew) => {
+    if (isNew) {
       const updatedNewExpenses = [...newExpenses];
-      const fieldName = data.target.name;
-      const value = data.target.value;
-
-      updatedNewExpenses[index] = {
-        ...updatedNewExpenses[index],
-        [fieldName]: value, // Merge updated fields into the specific new expense
-      };
+      updatedNewExpenses[index] = { ...updatedNewExpenses[index], [field]: value };
       setNewExpenses(updatedNewExpenses);
     } else {
-      // Handle changes for existing expenses
       const updatedExpenses = [...expenses];
-      const expenseIndex = expenses.findIndex(
-        (expense) => expense._id === index
-      );
-      if (expenseIndex !== -1) {
-        updatedExpenses[expenseIndex] = {
-          ...updatedExpenses[expenseIndex],
-          ...data, // Merge updated fields into the specific existing expense
-        };
-        setExpenses(updatedExpenses);
-      }
+      updatedExpenses[index] = { ...updatedExpenses[index], [field]: value };
+      setExpenses(updatedExpenses);
     }
   };
 
-  // Add a new empty row for adding a expense
-  const handleAddRow = () => {
-    setNewExpenses([
-      ...newExpenses,
-      {
+  const handleSaveEdit = (expense, index, isNew) => {
+    saveEdit({
+      item: expense,
+      index,
+      isNew,
+      newItems: newExpenses,
+      items: expenses,
+      setItems: setExpenses,
+      setNewItems: setNewExpenses,
+      apiEndpoint: "/api/expenses",
+      setSuccessMessage,
+    });
+  };
+
+  const handleToggleEditMode = (index, isNew) => {
+    if (isNew) {
+      const updatedNewItems = [...newExpenses];
+      updatedNewItems[index].isEditing = true;
+      setNewExpenses(updatedNewItems);
+    } else {
+      const updatedItems = [...expenses];
+
+      // Save the original value before setting edit mode
+      setOriginalItems((prev) => ({
+        ...prev,
+        [index]: { ...updatedItems[index] },
+      }));
+
+      updatedItems[index].isEditing = true;
+      setExpenses(updatedItems);
+    }
+  };
+
+  const handleAddAndSaveExpense = async () => {
+    const { paidInUSD, weightInGrams  } = newExpense;
+    const parsedPaidInUSD = parseFloat(paidInUSD);
+    const parsedWeightInGrams = parseFloat(weightInGrams);
+
+    if (isNaN(parsedPaidInUSD) || isNaN(parsedWeightInGrams) || parsedWeightInGrams === 0) {
+      console.error("Invalid values for paidInUSD or weightInGrams. Please provide valid numbers.");
+      setShowValidationError(true);
+      return;
+    }
+
+    const unitPriceInUSD = (parsedPaidInUSD / parsedWeightInGrams).toFixed(2);
+
+    const generatedExpense = {
+      ...newExpense,
+      unitPriceInUSD,
+      isNew: true,
+    };
+
+    if (!isValidExpense(generatedExpense)) {
+      console.log(generatedExpense);
+      console.error("Validation failed. Please fill all required fields.");
+      setShowValidationError(true);
+      return;
+    }
+
+    try {
+      // Save to the backend
+      const response = await fetch("/api/expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(generatedExpense),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save the expense to the backend");
+      }
+
+      const savedExpense = await response.json();
+
+      // Update the save list with the saved expense from the backend
+      setExpenses((prev) => [savedExpense, ...prev]);
+
+      // Reset the form
+      setNewExpense({
         dateOfExpense: "",
         category: "",
         description: "",
@@ -100,363 +225,487 @@ const Expenses = () => {
         exchangeRate: "",
         paidInUSD: "",
         unitPriceInUSD: "",
-      },
-    ]);
-  };
+      });
 
-  // Save all new expenses to the backend
-  const handleSaveAllExpenses = async () => {
-    console.log("Saving expenses:", newExpenses);
-    try {
-      const validNewExpenses = newExpenses.filter(
-        (expense) =>
-          expense.dateOfExpense &&
-          expense.category &&
-          expense.description &&
-          expense.weightInGrams &&
-          expense.paidInLL &&
-          expense.exchangeRate &&
-          expense.paidInUSD &&
-          expense.unitPriceInUSD
-      );
-      console.log("Valid expenses to save:", validNewExpenses);
-      if (validNewExpenses.length === 0) {
-        console.error("No valid expenses to save.");
-        return;
-      }
+      setShowValidationError(false);
+      setIsFormVisible(false); // Collapse the form after saving
+      console.log("Expense added and saved successfully:", savedExpense);
 
-      const responses = await Promise.all(
-        validNewExpenses.map((expense) =>
-          fetch("/api/expenses", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(expense),
-          })
-        )
-      );
-
-      const failedResponses = responses.filter((res) => !res.ok);
-      if (failedResponses.length > 0) {
-        throw new Error("Some expenses failed to save");
-      }
-
-      const savedExpenses = await Promise.all(
-        responses.map((res) => res.json())
-      );
-      setExpenses((prev) => [...prev, ...savedExpenses]);
-      setNewExpenses([]);
-      setSuccessMessage("Expenses saved successfully!");
-
+      // Optionally show a success message
+      setSuccessMessage("Expense added and saved successfully!");
+      console.log("Success message:", successMessage);
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
-      console.error("Error saving expenses:", error);
+      console.error("Error saving expense:", error.message);
     }
   };
 
-  return (
-    <div style={{ fontFamily: "Arial, sans-serif", padding: "20px" }}>
-      {/* Success Message */}
-      {successMessage && (
-        <div className="mb-4 p-2 bg-green-200 text-green-700 rounded-lg text-center">
-          {successMessage}
-        </div>
-      )}
+  const expensesColumns = [
+    {
+      header: "Expense date",
+      accessor: "dateOfExpense",
+      type: "date",
+      isEditable: true,
+    },
+    {
+      header: "Category",
+      accessor: "category",
+      isEditable: true,
+      type: "select",
+      options: ["Purchases & Supplies", 
+        "Travel & Transportation", 
+        "Course & Consultation Fees", 
+        "Regular Facility Expenses", 
+        "Irregular Facility Expenses"],
+    },
+    {
+      header: "Description",
+      accessor: "description",
+      isEditable: true,
+      type: "text",
+    },
+    {
+      header: "Weight In Grams",
+      accessor: "weightInGrams",
+      isEditable: true,
+      type: "number",
+    },
+    {
+      header: "Paid in LL",
+      accessor: "paidInLL",
+      isEditable: true,
+      type: "number",
+    },
+    {
+      header: "Exchange Rate",
+      accessor: "exchangeRate",
+      isEditable: true,
+      type: "number",
+    },
+    {
+      header: "Paid ($)",
+      accessor: "paidInUSD",
+      isEditable: true,
+      type: "number",
+    },
+    {
+      header: "Unit Price ($)",
+      accessor: "unitPriceInUSD",
+      isEditable: true,
+      type: "number",
+    },
+  ];
 
+  // pagination
+  const { currentPage, rowsPerPage } = pagination;
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const paginatedExpenses = filteredExpenses.slice(
+    startIndex,
+    startIndex + rowsPerPage
+  );
+
+  return (
+    <div>
+      {/*Section 1*/}
+      <div>
+        <div>
+          <h1 className="page-title">Expenses Overview</h1>
+        </div>
+
+        {/* Filters */}
+        <Filters
+          filtersConfig={expensesFiltersConfig}
+          filters={filters}
+          setFilters={(updatedFilter) => {
+            setFilters((prevFilters) => ({
+              ...prevFilters,
+              ...updatedFilter,
+            }));
+          }}
+          onResetFilters={handleResetFilters}
+        />
+      </div>
+
+
+        {/* Table to display expenses */}
+        <div className="table-panel">
+          <ItemsTable 
+          columns={expensesColumns}
+          items={paginatedExpenses}
+          onEdit={handleEditChange}
+          onDelete={(idOrIndex, isNewExpense) => {
+            if (idOrIndex !== undefined && idOrIndex !== null) {
+              handleDelete(idOrIndex, isNewExpense, "expenses", setExpenses);
+              setDeleteTarget(null)
+            } else {
+              console.error("Delete target is not properly set:", idOrIndex);
+            }
+          }}
+          onSaveEdit={handleSaveEdit}
+          onCancelEdit={(index, isNew) =>
+            cancelEdit({
+              index,
+              isNew,
+              newItems: newExpenses,
+              setNewItems: setNewExpenses,
+              items: expenses,
+              setItems: setExpenses,
+              originalItems,
+              setOriginalItems,
+            })
+          }
+          onToggleEditMode={handleToggleEditMode}
+        />
+          {/* Pagination */}
+          <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={Math.ceil(filteredExpenses.length / pagination.rowsPerPage)}
+          onPageChange={(page) =>
+            setPagination((prev) => ({ ...prev, currentPage: page }))
+          }
+        />
+      </div>
+
+      {/*Section 2: Add New Expense*/}
       <div
         style={{
+          margin: "20px auto", // Center the section horizontally
+          maxWidth: "95%", // Aligns with table width
           display: "flex",
-          flexDirection: "column",
-          backgroundColor: "#f0f8ff",
-          padding: "5px",
-          marginBottom: "5px",
-          borderRadius: "8px",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+          flexDirection: "column", // Stack elements vertically
+          gap: "15px", // Adds space between button and table
         }}
       >
-        <ul className="flex mb-4 float-right gap-4 p-6">
-          <button
-            onClick={handleAddRow}
-            className="text-orange-700 border bg-orange-200 rounded-lg p-2 h-10 w-24 font-semibold hover:opacity-80"
-          >
-            Add
-          </button>
+        <button
+          className={`button button-add ${isFormVisible ? "close" : "add"}`}
+          onClick={toggleFormVisibility}
+        >
+          {isFormVisible ? (
+            <>
+              <FaMinus style={{ fontSize: "18px" }} />
+              <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+                Close
+              </span>
+            </>
+          ) : (
+            <>
+              <FaPlus style={{ fontSize: "18px" }} />
+              <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+                Add New
+              </span>
+            </>
+          )}
+        </button>
 
-          <button
-            onClick={() => {
-              console.log("Save button clicked");
-              handleSaveAllExpenses();
+        {/* Success Message */}
+        {successMessage && (
+          <div
+            className="mb-4 p-2 bg-green-200 text-green-700 rounded-lg text-center"
+            style={{
+              width: "400px",
+              marginLeft: "300px", // Add space between the button and the message
+              marginTop: "5px",
+              padding: "10px 15px",
+              gap: "5px",
+              backgroundColor: "#d4edda", // Success green background
+              color: "#155724", // Success green text
+              borderRadius: "5px",
+              fontSize: "16px",
+              textAlign: "center",
             }}
-            className="text-green-600 border bg-green-100 rounded-lg p-2 h-10 w-24 font-semibold hover:opacity-80"
           >
-            Save
-          </button>
-        </ul>
-      </div>
+            {successMessage}
+          </div>
+        )}
 
-      {/*Section 2*/}
-      <div
-       style={{
-        marginTop: "10px",
-        padding: "10px",
-        border: "1px solid #ccc",
-        borderRadius: "8px",
-        backgroundColor: "#fff",
-        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-        width: "100%",
-        }}
-      >
-      <div style={{padding: "10px", backgroundColor: "#e6f7ff", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",}}>
-        <h1 style={{ textAlign: "center", fontSize: "24px", margin: "0" }}>Overview</h1>
-        {/* Table to display expenses */}
-        <table style={{ tableLayout: "fixed", width: "100%" }}>
-          <thead>
-            <tr className="border border-gray-300">
-              <th className="border border-gray-300 p-2 text-center align-middle"
-                      style={{ color: "#2C3E50" }}>
-                Expense Date
-              </th>
-              <th className="border border-gray-300 p-2 text-center align-middle"
-                      style={{ color: "#2C3E50" }}>
-                Category
-              </th>
-              <th className="border border-gray-300 p-2 text-center align-middle"
-                      style={{ color: "#2C3E50" }}>
-                Description
-              </th>
-              <th className="border border-gray-300 p-2 text-center align-middle"
-                      style={{ color: "#2C3E50" }}>
-                Weight in Grams
-              </th>
-              <th className="border border-gray-300 p-2 text-center align-middle"
-                      style={{ color: "#2C3E50" }}>
-                Paid in LL
-              </th>
-              <th className="border border-gray-300 p-2 text-center align-middle"
-                      style={{ color: "#2C3E50" }}>
-                Exchange Rate
-              </th>
-              <th className="border border-gray-300 p-2 text-center align-middle"
-                      style={{ color: "#2C3E50" }}>
-                Paid ($)
-              </th>
-              <th className="border border-gray-300 p-2 text-center align-middle"
-                      style={{ color: "#2C3E50" }}>
-                Unit Price ($)
-              </th>
-              <th className="border border-gray-300 p-2 text-center align-middle"
-                      style={{ color: "#2C3E50" }}>
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* Render existing expenses */}
-            {expenses.map((expense) => (
-              <tr key={expense._id} className="border border-gray-300">
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  {expense.dateOfExpense}
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  <select
-                    value={expense.category}
-                    onChange={(e) =>
-                      handleExpenseChange(
-                        expense._id,
-                        { category: e.target.value },
-                        false
-                      )
-                    }
-                    className="edit-input"
-                  >
-                    <option value="" disabled>
-                      Select Category
-                    </option>
-                    {categories.map((cat, idx) => (
-                      <option key={idx} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  {expense.description}
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  {expense.weightInGrams}
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  {expense.paidInLL}
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  {expense.exchangeRate}
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  {expense.paidInUSD}
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  {expense.unitPriceInUSD}
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  <button
-                    onClick={() => confirmDelete(expense._id, false)}
-                    className="text-red-700 border bg-red-300 rounded-lg p-1 hover:opacity-80"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
+        {/* Expense Form */}
 
-            {/* Render rows for new expenses with delete option */}
-            {newExpenses.map((expense, index) => (
-              <tr key={index} className="border border-gray-300">
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  <input
-                    type="date"
-                    name="dateOfExpense"
-                    value={expense.dateOfExpense}
-                    onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="edit-input"
-                  />
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  <select
-                    name="category"
-                    value={expense.category}
-                    onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="edit-input"
-                  >
-                    <option value="" disabled>
-                      Select Category
-                    </option>
-                    {categories.map((cat, idx) => (
-                      <option key={idx} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  <input
-                    type="text"
-                    name="description"
-                    placeholder="Enter value"
-                    value={expense.description}
-                    onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="edit-input"
-                  />
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  <input
-                    type="number"
-                    name="weightInGrams"
-                    placeholder="Enter value"
-                    value={expense.weightInGrams}
-                    onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="edit-input"
-                  />
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  <input
-                    type="number"
-                    name="paidInLL"
-                    placeholder="Enter value"
-                    value={expense.paidInLL}
-                    onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="edit-input"
-                  />
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  <input
-                    type="number"
-                    name="exchangeRate"
-                    placeholder="Enter value"
-                    value={expense.exchangeRate}
-                    onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="edit-input"
-                  />
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  <input
-                    type="number"
-                    name="paidInUSD"
-                    placeholder="Enter value"
-                    value={expense.paidInUSD}
-                    onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="edit-input"
-                  />
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  <input
-                    type="number"
-                    name="unitPriceInUSD"
-                    placeholder="Enter value"
-                    value={expense.unitPriceInUSD}
-                    onChange={(e) => handleExpenseChange(index, e, true)}
-                    className="edit-input"
-                  />
-                </td>
-                <td className="border border-gray-300 p-2 text-center align-middle"
-                            style={{ color: "#444" }}>
-                  <button
-                    onClick={() => confirmDelete(index, true)}
-                    className="text-red-700 border bg-red-300 rounded-lg p-1 hover:opacity-80"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      </div>
-      {/* Confirmation Modal */}
-      {deleteTarget && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white text-black rounded-lg p-4 shadow-lg">
-            <p className="mb-4">
-              Are you sure you want to delete this expense?
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() =>
-                  handleDeleteExpense(
-                    deleteTarget.idOrIndex,
-                    deleteTarget.isNewExpense
-                  )
+        {isFormVisible && (
+          <div>
+            <h1 className="page-title" style={{ marginTop: "5px" }}>
+              Add New Expense
+            </h1>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr",
+                gap: "15px",
+              }}
+            >
+              <DropdownWithAddNew
+                type="category"
+                options={categories}
+                setOptions={setCategories}
+                selectedOption={newExpense.category}
+                setSelectedOption={(value) =>
+                  setNewExpense((prev) => ({ ...prev, category: value }))
                 }
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              />
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  border: "1px solid #ccc",
+                  borderRadius: "5px",
+                  padding: "10px",
+                  backgroundColor: "#fff",
+                  width: "450px",
+                  gap: "10px",
+                }}
               >
-                Delete
-              </button>
+                <label
+                  htmlFor="dateOfExpense"
+                  className="text-gray-600"
+                  style={{ fontWeight: "bold", margin: "0" }}
+                >
+                  Expense Date:
+                </label>
+                <input
+                  id="dateOfExpense"
+                  type="date"
+                  placeholder="Enter Value"
+                  style={{
+                    outline: "none",
+                    border: "none",
+                    flex: 1,
+                    color: "#888",
+                  }}
+                  value={newExpense.dateOfExpense}
+                  onChange={(e) =>
+                    handleExpenseChange("dateOfExpense", e.target.value)
+                  }
+                />
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  border: "1px solid #ccc",
+                  borderRadius: "5px",
+                  padding: "10px",
+                  backgroundColor: "#fff",
+                  width: "450px",
+                  gap: "10px",
+                }}
+              >
+                <label
+                  htmlFor="description"
+                  className="text-gray-600"
+                  style={{ fontWeight: "bold", margin: "0" }}
+                >
+                  Description:
+                </label>
+                <input
+                  id="description"
+                  type="text"
+                  placeholder="Enter Value"
+                  style={{
+                    outline: "none",
+                    border: "none",
+                    flex: 1,
+                    color: "#888",
+                  }}
+                  value={newExpense.description}
+                  onChange={(e) =>
+                    handleExpenseChange("description", e.target.value)
+                  }
+                />
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  border: "1px solid #ccc",
+                  borderRadius: "5px",
+                  padding: "10px",
+                  backgroundColor: "#fff",
+                  width: "450px",
+                  gap: "10px",
+                }}
+              >
+                <label
+                  htmlFor="weightInGrams"
+                  className="text-gray-600"
+                  style={{ fontWeight: "bold", margin: "0" }}
+                >
+                  Weight in Grams:
+                </label>
+                <input
+                  id="weightInGrams"
+                  type="number"
+                  placeholder="Enter Value"
+                  style={{
+                    outline: "none",
+                    border: "none",
+                    flex: 1,
+                    color: "#888",
+                  }}
+                  value={newExpense.weightInGrams}
+                  onChange={(e) =>
+                    handleExpenseChange("weightInGrams", e.target.value)
+                  }
+                />
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  border: "1px solid #ccc",
+                  borderRadius: "5px",
+                  padding: "10px",
+                  backgroundColor: "#fff",
+                  width: "450px",
+                  gap: "10px",
+                }}
+              >
+                <label
+                  htmlFor="paidInLL"
+                  className="text-gray-600"
+                  style={{ fontWeight: "bold", margin: "0" }}
+                >
+                  Paid in LL:
+                </label>
+                <input
+                  id="paidInLL"
+                  type="number"
+                  placeholder="Enter Value"
+                  style={{
+                    outline: "none",
+                    border: "none",
+                    flex: 1,
+                    color: "#888",
+                  }}
+                  value={newExpense.paidInLL}
+                  onChange={(e) =>
+                    handleExpenseChange("paidInLL", e.target.value)
+                  }
+                />
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  border: "1px solid #ccc",
+                  borderRadius: "5px",
+                  padding: "10px",
+                  backgroundColor: "#fff",
+                  width: "450px",
+                  gap: "10px",
+                }}
+              >
+                <label
+                  htmlFor="exchangeRate"
+                  className="text-gray-600"
+                  style={{ fontWeight: "bold", margin: "0" }}
+                >
+                  Exchange Rate:
+                </label>
+                <input
+                  id="exchangeRate"
+                  type="number"
+                  placeholder="Enter Value"
+                  style={{
+                    outline: "none",
+                    border: "none",
+                    flex: 1,
+                    color: "#888",
+                  }}
+                  value={newExpense.exchangeRate}
+                  onChange={(e) =>
+                    handleExpenseChange("exchangeRate", e.target.value)
+                  }
+                />
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  border: "1px solid #ccc",
+                  borderRadius: "5px",
+                  padding: "10px",
+                  backgroundColor: "#fff",
+                  width: "450px",
+                  gap: "10px",
+                }}
+              >
+                <label
+                  htmlFor="paidInUSD"
+                  className="text-gray-600"
+                  style={{ fontWeight: "bold", margin: "0" }}
+                >
+                  Paid ($):
+                </label>
+                <input
+                  id="paidInUSD"
+                  type="number"
+                  placeholder="Enter Value"
+                  style={{
+                    outline: "none",
+                    border: "none",
+                    flex: 1,
+                    color: "#888",
+                  }}
+                  value={newExpense.paidInUSD}
+                  onChange={(e) =>
+                    handleExpenseChange("paidInUSD", e.target.value)
+                  }
+                />
+              </div>
+
+             
+            </div>
+
+            <div
+              className="actions-buttons"
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                gap: "5px",
+                marginRight: "15px",
+              }}
+            >
+              {showValidationError && (
+                <div
+                  className="error-message"
+                  style={{
+                    textAlign: "center",
+                    margin: "0",
+                    fontSize: "16px",
+                    color: "red",
+                  }}
+                >
+                  Please fill in all required fields before adding the expense.
+                </div>
+              )}
+
               <button
-                onClick={() => setDeleteTarget(null)}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                className="button-savetb"
+                onClick={handleAddAndSaveExpense}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "5px",
+                  padding: "10px 10px",
+                }}
               >
-                Cancel
+                <FaSave style={{ fontSize: "18px" }} />
+                <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+                  Save
+                </span>
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
