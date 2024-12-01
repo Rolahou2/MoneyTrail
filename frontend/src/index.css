@@ -444,7 +444,7 @@ td {
 
 .top-nav {
     display: flex;
-    gap: 50px;
+    gap: 30px;
     align-items: center;
     align-content: center;
     /* Space between icons */

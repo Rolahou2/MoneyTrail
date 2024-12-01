@@ -1,128 +1,181 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { fetchItems } from "../utils/generalUtils";
+import ItemsTable from "../components/ItemsTable";
 
 const Accounting = () => {
-  const data = [
-    { id: 1, name: "Product 1", category: "Category A" },
-    { id: 2, name: "Product 2", category: "Category B" },
-    { id: 3, name: "Product 3", category: "Category A" },
-    { id: 4, name: "Product 4", category: "Category B" },
-    { id: 5, name: "Product 5", category: "Category A" },
-    { id: 6, name: "Product 6", category: "Category C" },
-    { id: 7, name: "Product 7", category: "Category A" },
-    { id: 8, name: "Product 8", category: "Category B" },
-    { id: 9, name: "Product 9", category: "Category A" },
-    { id: 10, name: "Product 10", category: "Category C" },
-    { id: 11, name: "Product 11", category: "Category A" },
-    { id: 12, name: "Product 12", category: "Category B" },
-    { id: 13, name: "Product 13", category: "Category A" },
-    { id: 14, name: "Product 14", category: "Category C" },
-    { id: 15, name: "Product 15", category: "Category B" },
+  const [accountingData, setAccountingData] = useState([]);
+  const [monthlySalesData, setMonthlySalesData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAccountingData = async () => {
+      setLoading(true);
+      try {
+        // Fetch sales and expenses data
+        const expenses = await fetchItems("/api/expenses");
+        const sales = await fetchItems("/api/sales");
+
+        // Aggregate the data per month and year
+        const aggregatedData = aggregateAccountingData(expenses, sales);
+        setAccountingData(aggregatedData);
+
+        // Prepare data for the chart (number of sold items per month)
+        const monthlySales = getMonthlySalesData(sales);
+        setMonthlySalesData(monthlySales);
+      } catch (error) {
+        console.error("Error fetching accounting data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAccountingData();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  
+  const accountingColumns = [
+    {
+      header: "Month",
+      accessor: "month",
+      isEditable: false,
+      type: "number",
+    },
+    {
+      header: "Year",
+      accessor: "year",
+      isEditable: false,
+      type: "number",
+    },
+    {
+      header: "Total Purchases & Supplies",
+      accessor: "totalPurchasesAndSupplies",
+      isEditable: false,
+      type: "number",
+    },
+    {
+      header: "Regular Facility Expenses",
+      accessor: "regularFacilityExpenses",
+      isEditable: false,
+      type: "number",
+    },
+    {
+      header: "Total Sales",
+      accessor: "totalSales",
+      isEditable: false,
+      type: "number",
+    },
+    {
+      header: "Revenues",
+      accessor: "revenues",
+      isEditable: false,
+      type: "number",
+    },
+    {
+      header: "Total Profit",
+      accessor: "totalProfit",
+      isEditable: false,
+      type: "number",
+    },
   ];
 
-  const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 5;
-
-  const startIndex = currentPage * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = data.slice(startIndex, endIndex);
-
-  const totalPages = Math.ceil(data.length / itemsPerPage);
-
-  const handlePageChange = (pageIndex) => {
-    if (pageIndex >= 0 && pageIndex < totalPages) {
-      setCurrentPage(pageIndex);
-    }
-  };
-
   return (
-    <div className="p-4">
-      {/* Table */}
-      <table className="min-w-full border border-gray-200">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="border border-gray-300 p-2 text-left">ID</th>
-            <th className="border border-gray-300 p-2 text-left">Name</th>
-            <th className="border border-gray-300 p-2 text-left">Category</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentItems.map((item) => (
-            <tr key={item.id}>
-              <td className="border border-gray-300 p-2">{item.id}</td>
-              <td className="border border-gray-300 p-2">{item.name}</td>
-              <td className="border border-gray-300 p-2">{item.category}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Pagination Controls */}
-      <div className="flex justify-center items-center mt-4 space-x-2">
-        {/* Previous Page */}
-        <button
-          onClick={() => handlePageChange(0)}
-          disabled={currentPage === 0}
-          className={`px-3 py-1 border rounded ${
-            currentPage === 0
-              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-              : "bg-gray-300 hover:bg-gray-400 text-gray-700"
-          }`}
-        >
-          {"<<"}
-        </button>
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 0}
-          className={`px-3 py-1 border rounded ${
-            currentPage === 0
-              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-              : "bg-gray-300 hover:bg-gray-400 text-gray-700"
-          }`}
-        >
-          {"<"}
-        </button>
-
-        {/* Page Numbers */}
-        {Array.from({ length: totalPages }, (_, index) => (
-          <button
-            key={index}
-            onClick={() => handlePageChange(index)}
-            className={`px-3 py-1 border rounded ${
-              index === currentPage
-                ? "bg-blue-500 text-white"
-                : "bg-gray-300 hover:bg-gray-400 text-gray-700"
-            }`}
-          >
-            {index + 1}
-          </button>
-        ))}
-
-        {/* Next Page */}
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages - 1}
-          className={`px-3 py-1 border rounded ${
-            currentPage === totalPages - 1
-              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-              : "bg-gray-300 hover:bg-gray-400 text-gray-700"
-          }`}
-        >
-          {">"}
-        </button>
-        <button
-          onClick={() => handlePageChange(totalPages - 1)}
-          disabled={currentPage === totalPages - 1}
-          className={`px-3 py-1 border rounded ${
-            currentPage === totalPages - 1
-              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-              : "bg-gray-300 hover:bg-gray-400 text-gray-700"
-          }`}
-        >
-          {">>"}
-        </button>
+    <>
+      <div>
+          <h1 className="page-title">Accounting Overview</h1>
       </div>
-    </div>
+      <div className="table-panel">
+        <ItemsTable 
+        columns={accountingColumns}
+        items={accountingData}
+        />
+      </div>
+</>
   );
 };
 
 export default Accounting;
+
+const aggregateAccountingData = (expenses, sales) => {
+  const data = {};
+
+  expenses.forEach((expense) => {
+    const date = new Date(expense.dateOfExpense);
+    const month = date.getMonth() + 1; // Get month (0-indexed, so +1)
+    const year = date.getFullYear();
+    const key = `${year}-${month}`;
+
+    if (!data[key]) {
+      data[key] = {
+        month,
+        year,
+        totalPurchasesAndSupplies: 0,
+        regularFacilityExpenses: 0,
+        totalSales: 0,
+        revenues: 0,
+        totalProfit: 0,
+      };
+    }
+
+    // Categorize expenses
+    if (expense.category === "Purchases & Supplies") {
+      data[key].totalPurchasesAndSupplies += parseFloat(expense.paidInUSD || 0);
+    } else if (expense.category === "Regular Facility Expenses") {
+      data[key].regularFacilityExpenses += parseFloat(expense.paidInUSD || 0);
+    }
+  });
+
+  sales.forEach((sale) => {
+    const date = new Date(sale.dateOfPurchase);
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const key = `${year}-${month}`;
+
+    if (!data[key]) {
+      data[key] = {
+        month,
+        year,
+        totalPurchasesAndSupplies: 0,
+        regularFacilityExpenses: 0,
+        totalSales: 0,
+        revenues: 0,
+        totalProfit: 0,
+      };
+    }
+
+    // Add sales data
+    const saleAmount = parseFloat(sale.totalamount || 0);
+    data[key].totalSales += saleAmount;
+    data[key].revenues += saleAmount; // Assuming revenue is the same as total sales for simplicity
+    data[key].totalProfit += parseFloat(sale.totalProfitLL || 0); // Assuming profit is tracked in `totalProfitLL`
+  });
+
+  // Convert data object to an array
+  return Object.values(data);
+};
+
+// Function to get monthly sales data for the chart
+const getMonthlySalesData = (sales) => {
+  const monthlySalesCount = {};
+
+  sales.forEach((sale) => {
+    const date = new Date(sale.dateOfPurchase);
+    const month = date.getMonth() + 1; // 0-indexed, add 1 for correct month
+    const year = date.getFullYear();
+    const key = `${year}-${month}`;
+
+    if (!monthlySalesCount[key]) {
+      monthlySalesCount[key] = {
+        label: `${year}-${month}`,
+        count: 0,
+      };
+    }
+
+    monthlySalesCount[key].count += parseInt(sale.quantity, 10) || 0;
+  });
+
+  return Object.values(monthlySalesCount);
+};
