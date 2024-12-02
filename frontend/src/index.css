@@ -278,7 +278,8 @@ td {
 .navigation-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 30px;
+    margin-top: 80px;
 }
 
 
@@ -287,8 +288,8 @@ td {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 250px;
-    height: 250px;
+    width: 200px;
+    height: 200px;
     background-color: #2a2a2a;
     /* Dark gray for tiles */
     color: white;
@@ -307,7 +308,7 @@ td {
 }
 
 .tile-icon {
-    font-size: 64px;
+    font-size: 24px;
     /* Larger icons */
     margin-bottom: 10px;
     color: white;
@@ -321,18 +322,18 @@ td {
 }
 
 .description {
-    font-size: 20px;
+    font-size: 24px;
     color: #cccccc;
-    margin-bottom: 30px;
-    text-align: justify;
+    margin-bottom: 60px;
+    text-align: center;
 }
 
 .conclusion {
-    font-size: 20px;
+    font-size: 24px;
     color: white;
     font-weight: bold;
-    margin-top: 30px;
-    text-align: justify;
+    margin-top: 60px;
+    text-align: center;
 }
 
 .feature-list {
@@ -344,13 +345,13 @@ td {
 }
 
 .feature-list li {
-    font-size: 18px;
+    font-size: 20px;
     margin-bottom: 10px;
     text-align: justify;
 }
 
 .feature-list li strong {
-    color: #92B079;
+    color: #5FBFFA;
     /* Highlighted feature names */
 }
 

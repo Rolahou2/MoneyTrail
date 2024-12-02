@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { FaBox, FaChartLine, FaWallet, FaFileInvoiceDollar } from "react-icons/fa";
 
 const Home = () => {
@@ -9,36 +9,32 @@ const Home = () => {
         {/* Left Column */}
         <div className="left-column">
           <div className="intro-section">
-            <h1>BrightClean</h1>
             <p className="description">
-              BrightClean is an in-house web application designed to streamline
+            <span className="text-sky-500"><strong>Bright</strong></span>
+            <span className="text-sky-700"><strong>Clean</strong></span> is an in-house web application designed to streamline
               your detergent business operations. It provides a comprehensive
               platform to:
             </p>
             <ul className="feature-list">
               <li>
-                <strong>Manage Products:</strong> Add, delete and update product
+              <NavLink to="/product-list"><strong>Manage Products:</strong></NavLink> Add, delete and update product
                 details efficiently.
               </li>
               <li>
-                <strong>Track Sales:</strong> Log sales transactions for better
+              <NavLink to="/sales"><strong>Track Sales:</strong></NavLink> Log sales transactions for better
                 inventory and revenue tracking.
               </li>
               <li>
-                <strong>Monitor Expenses:</strong> Record and categorize
+              <NavLink to="/expenses"><strong>Monitor Expenses:</strong></NavLink> Record and categorize
                 business expenses.
               </li>
               <li>
-                <strong>Handle Accounting:</strong> Simplify financial
+              <NavLink to="/accounting"><strong>Handle Accounting:</strong></NavLink> Simplify financial
                 management with built-in tools.
-              </li>
-              <li>
-                <strong>View Dashboards:</strong> Gain insights into business
-                progress through real-time dashboards.
               </li>
             </ul>
             <p className="conclusion">
-              With BrightClean, you can manage your operations seamlessly,
+              Manage your operations seamlessly with BrightClean,
               ensuring better decision-making and productivity.
             </p>
           </div>
@@ -48,19 +44,19 @@ const Home = () => {
         <div className="right-column">
           <div className="navigation-grid">
             <Link to="/product-list" className="title-icon">
-              <FaBox style={{ fontSize: "36px" }} />
+              <FaBox style={{ fontSize: "32px" }} />
               <span>Products</span>
             </Link>
             <Link to="/sales" className="title-icon">
-              <FaChartLine style={{ fontSize: "36px" }} />
+              <FaChartLine style={{ fontSize: "32px" }} />
               <span>Sales</span>
             </Link>
             <Link to="/expenses" className="title-icon">
-              <FaWallet style={{ fontSize: "36px" }} />
+              <FaWallet style={{ fontSize: "32px" }} />
               <span>Expenses</span>
             </Link>
             <Link to="/accounting" className="title-icon">
-              <FaFileInvoiceDollar style={{ fontSize: "36px" }} />
+              <FaFileInvoiceDollar style={{ fontSize: "32px" }} />
               <span>Accounting</span>
             </Link>
           </div>
