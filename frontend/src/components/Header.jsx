@@ -10,8 +10,8 @@ const Header = () => {
       <div className="flex justify-between items-center max-w-6xl mx-auto p-1 gap-3" style={{marginLeft: "40px"}}>
         <NavLink to="/">
         <h1 className="font-bold text-sm sm:text-xl flex flex-wrap">
-            <span className="text-sky-500">Bright</span>
-            <span className="text-sky-700">Clean</span>
+            <span className="text-sky-500">Money</span>
+            <span className="text-sky-700">Trail</span>
           </h1>
         </NavLink>
         <form className="bg-slate-100 p-3 rounded-lg flex items-center">

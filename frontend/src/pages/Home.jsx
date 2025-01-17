@@ -10,9 +10,9 @@ const Home = () => {
         <div className="left-column">
           <div className="intro-section">
             <p className="description">
-            <span className="text-sky-500"><strong>Bright</strong></span>
-            <span className="text-sky-700"><strong>Clean</strong></span> is an in-house web application designed to streamline
-              your detergent business operations. It provides a comprehensive
+            <span className="text-sky-500"><strong>Money</strong></span>
+            <span className="text-sky-700"><strong>Trail</strong></span> is an in-house web application designed to streamline
+              your business operations. It provides a comprehensive
               platform to:
             </p>
             <ul className="feature-list">
@@ -34,7 +34,7 @@ const Home = () => {
               </li>
             </ul>
             <p className="conclusion">
-              Manage your operations seamlessly with BrightClean,
+              Manage your operations seamlessly with MoneyTrail,
               ensuring better decision-making and productivity.
             </p>
           </div>
