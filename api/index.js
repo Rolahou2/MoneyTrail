@@ -5,7 +5,7 @@ import productRoutes from "./routes/product.routes.js";
 import saleRoutes from "./routes/sale.routes.js";
 import expenseRoutes from "./routes/expense.routes.js";
 import accountingRoutes from "./routes/accounting.routes.js";
-import path from path;
+import path from 'path';
 
 dotenv.config();
 
