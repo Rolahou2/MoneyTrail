@@ -41,6 +41,7 @@ const Home = () => {
         </div>
 
         {/* Right Column */}
+
         <div className="right-column">
           <div className="navigation-grid">
             <Link to="/product-list" className="title-icon">
@@ -60,7 +61,8 @@ const Home = () => {
               <span>Accounting</span>
             </Link>
           </div>
-        </div>
+        </div> 
+
       </div>
     </div>
   );
