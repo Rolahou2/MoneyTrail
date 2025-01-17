@@ -271,8 +271,18 @@ td {
 /* Right Column */
 .right-column {
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.admin-section, .user-section {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 5px;
+}
+
+.admin-section h2, .user-section h2 {
+  margin-bottom: 1rem;
 }
 
 .navigation-grid {
