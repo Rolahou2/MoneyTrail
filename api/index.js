@@ -5,6 +5,7 @@ import productRoutes from "./routes/product.routes.js";
 import saleRoutes from "./routes/sale.routes.js";
 import expenseRoutes from "./routes/expense.routes.js";
 import accountingRoutes from "./routes/accounting.routes.js";
+import path from path;
 
 dotenv.config();
 
@@ -20,10 +21,18 @@ mongoose
     console.log(err);
   });
 
+  const __dirname = path.resolve();
+
 app.use("/api/products", productRoutes);
 app.use("/api/sales", saleRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/accounting", accountingRoutes);
+
+app.use(express.static(path.join(__dirname, "/frontend/dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
+})
 
 // Global error handling middleware
 app.use((err, req, res, next) => {
